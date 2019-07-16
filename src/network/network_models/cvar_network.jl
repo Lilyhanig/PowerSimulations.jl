@@ -2,6 +2,8 @@ function cvar_network(ps_m::CanonicalModel, expression::Symbol, prob_forecast, b
 
     time_steps = model_time_steps(ps_m)
     quantiles = PSY.get_quantiles(prob_forecast)
+    quantiles = quantiles./sum(quantiles)
+    @assert sum(quantiles) == 1
     M = length(quantiles)
     devices_netinjection = _remove_undef!(ps_m.expressions[expression])
 

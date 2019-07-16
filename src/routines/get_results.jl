@@ -1,4 +1,4 @@
-function result_dataframe(variable::JuMP.Containers.DenseAxisArray)
+function _get_2d_results(variable::JuMP.Containers.DenseAxisArray)
 
     result = Array{Float64, length(variable.axes)}(undef, length(variable.axes[2]), length(variable.axes[1]))
     # TODO: Remove this line once PowerSystems moves to Symbols
@@ -13,6 +13,34 @@ function result_dataframe(variable::JuMP.Containers.DenseAxisArray)
     end
 
     return DataFrames.DataFrame(result, names)
+end
+
+function _get_1d_results(variable::JuMP.Containers.DenseAxisArray)
+
+    result = Array{Float64, length(variable.axes)}(undef, length(variable.axes[1]))
+    # TODO: Remove this line once PowerSystems moves to Symbols
+    names = Array{Symbol, 1}(undef, length(variable.axes[1]))
+
+    for (ix, name) in enumerate(variable.axes[1])
+
+        result[ix] = JuMP.value(variable[name])
+
+    end
+
+    return DataFrames.DataFrame(var = result)
+end
+
+function result_dataframe(variable::JuMP.Containers.DenseAxisArray)
+
+    if length(variable.axes) == 2
+        return _get_2d_results(variable)
+    end
+
+    if length(variable.axes) == 1
+        return _get_1d_results(variable)
+    end
+
+    return
 
 end
 

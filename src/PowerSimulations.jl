@@ -120,6 +120,7 @@ include("devices/device_models/hydro_generation.jl")
 include("network/network_models/copperplate_model.jl")
 include("network/network_models/powermodels_interface.jl")
 include("network/network_models/ptdf_model.jl")
+include("network/network_models/cvar_network.jl")
 
 #Device constructors
 include("devices/device_constructors/device_constructors.jl")

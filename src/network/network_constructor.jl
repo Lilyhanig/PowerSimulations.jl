@@ -1,4 +1,18 @@
 function construct_network!(ps_m::CanonicalModel,
+                            system_formulation::Type{CvARNetworkForm},
+                            sys::PSY.System; kwargs...)
+
+    buses = PSY.get_components(PSY.Bus, sys)
+    bus_count = length(buses)
+    ini_time = PSY.get_forecasts_initial_time(sys)
+    prob_forecast = collect(PSY.get_forecasts(PSY.Probabilistic{PSY.RenewableDispatch}, sys, ini_time))[1]
+
+    cvar_network(ps_m, :nodal_balance_active, prob_forecast, bus_count)
+
+    return
+end
+
+function construct_network!(ps_m::CanonicalModel,
                             system_formulation::Type{CopperPlatePowerModel},
                             sys::PSY.System; kwargs...)
 

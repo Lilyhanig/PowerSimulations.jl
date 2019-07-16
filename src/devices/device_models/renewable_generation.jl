@@ -8,7 +8,9 @@ struct RenewableFullDispatch <: AbstractRenewableDispatchForm end
 
 struct RenewableConstantPowerFactor <: AbstractRenewableDispatchForm end
 
-########################### renewable generation variables ############################################
+struct RenewableCvAR <: AbstractRenewableFormulation end
+
+########################### renewable generation variables #################################
 
 function activepower_variables(ps_m::CanonicalModel,
                                devices::PSY.FlattenIteratorWrapper{R}) where {R <: PSY.RenewableGen}
@@ -36,13 +38,13 @@ function reactivepower_variables(ps_m::CanonicalModel,
 
 end
 
-####################################### Reactive Power Constraints ######################################
+####################################### Reactive Power Constraints #########################
 
 function reactivepower_constraints(ps_m::CanonicalModel,
                                     devices::PSY.FlattenIteratorWrapper{R},
                                     device_formulation::Type{RenewableFullDispatch},
                                     system_formulation::Type{S}) where {R <: PSY.RenewableGen,
-                                                                         S <: PM.AbstractPowerFormulation}
+                                                                        S <: PM.AbstractPowerFormulation}
 
     range_data = Vector{NamedMinMax}(undef, length(devices))
 
@@ -69,7 +71,7 @@ function reactivepower_constraints(ps_m::CanonicalModel,
                                     devices::PSY.FlattenIteratorWrapper{R},
                                     device_formulation::Type{RenewableConstantPowerFactor},
                                     system_formulation::Type{S}) where {R <: PSY.RenewableGen,
-                                                                         S <: PM.AbstractPowerFormulation}
+                                                                        S <: PM.AbstractPowerFormulation}
 
     names = (PSY.get_name(d) for d in devices)
     time_steps = model_time_steps(ps_m)
@@ -89,7 +91,7 @@ function reactivepower_constraints(ps_m::CanonicalModel,
 end
 
 
-######################## output constraints without Time Series ###################################
+######################## output constraints without Time Series ############################
 function _get_time_series(devices::PSY.FlattenIteratorWrapper{R},
                           time_steps::UnitRange{Int64}) where {R <: PSY.RenewableGen}
 

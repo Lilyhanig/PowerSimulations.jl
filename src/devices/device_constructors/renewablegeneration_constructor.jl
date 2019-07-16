@@ -123,3 +123,15 @@ function _internal_device_constructor!(ps_m::CanonicalModel,
                                   kwargs...)
 
 end
+
+function _internal_device_constructor!(ps_m::CanonicalModel,
+                                        device::Type{R},
+                                        device_formulation::Type{RenewableCvAR},
+                                        system_formulation::Type{S},
+                                        sys::PSY.System;
+                                        kwargs...) where {R <: PSY.RenewableGen,
+                                                          S <: PM.AbstractActivePowerFormulation}
+
+    return
+
+end

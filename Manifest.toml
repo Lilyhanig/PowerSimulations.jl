@@ -29,9 +29,9 @@ version = "0.5.9"
 
 [[Calculus]]
 deps = ["Compat"]
-git-tree-sha1 = "f60954495a7afcee4136f78d1d60350abd37a409"
+git-tree-sha1 = "bd8bbd105ba583a42385bd6dc4a20dad8ab3dc11"
 uuid = "49dc2e85-a5d0-5ad3-a950-438e2897f1b9"
-version = "0.4.1"
+version = "0.5.0"
 
 [[CategoricalArrays]]
 deps = ["Compat", "Future", "JSON", "Missings", "Printf", "Reexport"]
@@ -105,10 +105,10 @@ uuid = "8f5d6c58-4d21-5cfd-889c-e3ad7ee6a615"
 version = "0.9.3"
 
 [[Feather]]
-deps = ["Arrow", "CategoricalArrays", "DataFrames", "Dates", "FlatBuffers", "Mmap", "Random", "Tables", "Test"]
-git-tree-sha1 = "9b5a2052d63d2dd6e208bf3438af175fdd8334c1"
+deps = ["Arrow", "CategoricalArrays", "DataFrames", "Dates", "FlatBuffers", "Mmap", "Tables"]
+git-tree-sha1 = "a963f89bc16735af00cd28ac60d4145cd7fe2abd"
 uuid = "becb17da-46f6-5d3c-ad1b-1c5fe96bc73c"
-version = "0.5.1"
+version = "0.5.3"
 
 [[FlatBuffers]]
 deps = ["Parameters", "Pkg", "Test"]
@@ -148,10 +148,10 @@ uuid = "82899510-4779-5014-852e-03e436cf321d"
 version = "1.0.0"
 
 [[JSON]]
-deps = ["Dates", "Distributed", "Mmap", "Sockets", "Test", "Unicode"]
-git-tree-sha1 = "1f7a25b53ec67f5e9422f1f551ee216503f4a0fa"
+deps = ["Dates", "Mmap", "Parsers", "Unicode"]
+git-tree-sha1 = "b34d7cef7b337321e97d22242c3c2b91f476748e"
 uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
-version = "0.20.0"
+version = "0.21.0"
 
 [[JSON2]]
 deps = ["Dates", "Parsers", "Test"]
@@ -228,10 +228,10 @@ uuid = "774612a8-9878-5177-865a-ca53ae2495f9"
 version = "0.1.1"
 
 [[Parameters]]
-deps = ["Markdown", "OrderedCollections", "REPL", "Test"]
-git-tree-sha1 = "70bdbfb2bceabb15345c0b54be4544813b3444e4"
+deps = ["OrderedCollections"]
+git-tree-sha1 = "1dfd7cd50a8eb06ef693a4c2bbe945943cd000c5"
 uuid = "d96e819e-fc66-5662-9728-84c9c7592b0a"
-version = "0.10.3"
+version = "0.11.0"
 
 [[Parsers]]
 deps = ["Dates", "Test"]
@@ -256,7 +256,7 @@ version = "0.12.2"
 
 [[PowerSystems]]
 deps = ["CSV", "DataFrames", "Dates", "InteractiveUtils", "JSON2", "LinearAlgebra", "Logging", "SparseArrays", "TimeSeries", "UUIDs", "YAML"]
-git-tree-sha1 = "1b74478118857fddb32f27d45028b78e489e0713"
+git-tree-sha1 = "0bf63c682b3e2891f0a300946e1a962fe32c8836"
 repo-rev = "dev"
 repo-url = "https://github.com/NREL/PowerSystems.jl.git"
 uuid = "bcd98974-b02a-5e2f-9ee0-a103f5c450dd"

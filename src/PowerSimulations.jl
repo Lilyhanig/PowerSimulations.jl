@@ -104,6 +104,7 @@ export get_stacked_generation_data
 export bar_plot
 export stack_plot
 export report
+export load_simulation_results
 
 #################################################################################
 # Imports

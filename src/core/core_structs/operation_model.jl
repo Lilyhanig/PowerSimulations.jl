@@ -12,7 +12,11 @@ end
 """
     ModelReference(::Type{T}) where {T<:PM.AbstractPowerFormulation}
 
+<<<<<<< HEAD
 Creates a model reference of the Power Formulation, devices, branches, and services.
+=======
+Creates a model reference of the Power Formulation, devices, branches, and services. 
+>>>>>>> e58adde5d9f1e281791a5ca2098c2053fcb97125
 
 # Arguments
 -`model::Type{T} where {T<:PM.AbstractPowerFormulation} = CopperPlatePowerModel`:
@@ -40,6 +44,45 @@ mutable struct OperationModel{M<:AbstractOperationModel}
     canonical::CanonicalModel
 end
 
+"""
+    OperationModel(::Type{M},
+    model_ref::ModelReference,
+    sys::PSY.System;
+    optimizer::Union{Nothing, JuMP.OptimizerFactory}=nothing,
+    kwargs...) where {M<:AbstractOperationModel,
+                      T<:PM.AbstractPowerFormulation}
+
+This builds the optimization model and populates the operation model
+
+# Arguments
+-`::Type{M} where {M<:AbstractOperationModel, T<:PM.AbstractPowerFormulation} = TestOptModel`:
+The abstract operation model type
+-`model_ref::ModelReference = model_ref`: The model reference made up of transmission, devices,
+                                          branches, and services.
+-`sys::PSY.System = c_sys5`: the system created using Power Systems
+
+# Output
+-`op_model::OperationModel`: The operation model contains the model type, model, Power
+Systems system, and optimization model.
+
+# Example
+```julia
+model_ref= ModelReference(CopperPlatePowerModel, devices, branches, services)
+OpModel = OperationModel(TestOptModel, model_ref, c_sys5_re; PTDF = PTDF5, optimizer = GLPK_optimizer)
+```
+
+# Accepted Key Words
+-`verbose::Bool = true`: verbose default is true
+-`PTDF::PTDF = PTDF`: Passes the PTDF matrix into the optimization model
+-`optimizer::union{Nothing,JuMP.OptimizerFactory} = GLPK_optimizer`: The optimizer gets passed
+into the optimization model the default is nothing.
+-`sequential_runs::Bool = false`: tells the model to do sequential runs
+-`initial_conditions::DICKDA = DICKDA()`: default of Dict{ICKey, Array{InitialCondition}}
+-`parameters::Bool = false`: enable JuMP parameters
+-`forecast::Bool = true`: if true, forecast collects the time steps in Power Systems,
+if false it runs for one time step
+-`initial_time::Dates.DateTime = PSY.get_forecasts_initial_time(sys)`: initial time of forecast
+"""
 function OperationModel(::Type{M},
                         model_ref::ModelReference,
                         sys::PSY.System;
@@ -55,7 +98,45 @@ function OperationModel(::Type{M},
     return  op_model
 
 end
+"""
+    OperationModel(op_model::Type{M},
+                    ::Type{T},
+                    sys::PSY.System;
+                    kwargs...) where {M<:AbstractOperationModel,
+                                    T<:PM.AbstractPowerFormulation}
 
+This uses the Abstract Power Formulation to build the model reference and
+the optimization model and populates the operation model struct.
+
+# Arguments
+-`op_model::Type{M} = where {M<:AbstractOperationModel`: Defines the type of the operation model
+-`::Type{T} where T<:PM.AbstractPowerFormulation`: The power formulation used for model ref & optimization model
+-`sys::PSY.System = c_sys5`: the system created in Power Systems
+
+# Output
+-`op_model::OperationModel`: The operation model contains the model type, model, Power
+Systems system, and optimization model.
+
+# Example
+```julia
+model_ref= ModelReference(CopperPlatePowerModel, devices, branches, services)
+OpModel = OperationModel(TestOptModel, model_ref, c_sys5_re; PTDF = PTDF5, optimizer = GLPK_optimizer)
+```
+
+
+# Accepted Key Words
+-`verbose::Bool = true`: verbose default is true
+-`PTDF::PTDF = PTDF`: Passes the PTDF matrix into the optimization model
+-`optimizer::union{Nothing,JuMP.OptimizerFactory} = GLPK_optimizer`: The optimizer gets passed
+into the optimization model the default is nothing.
+-`sequential_runs::Bool = false`: tells the model to do sequential runs
+-`initial_conditions::DICKDA = DICKDA()`: default of Dict{ICKey, Array{InitialCondition}}
+-`parameters::Bool = false`: enable JuMP parameters
+-`forecast::Bool = true`: if true, forecast collects the time steps in Power Systems,
+if false it runs for one time step
+-`initial_time::Dates.DateTime = PSY.get_forecasts_initial_time(sys)`: initial time of forecast
+
+"""
 function OperationModel(::Type{M},
                         ::Type{T},
                         sys::PSY.System;
@@ -69,12 +150,52 @@ function OperationModel(::Type{M},
                           CanonicalModel(T, sys, optimizer; kwargs...))
 
 end
+"""
+    OperationModel(::Type{T},
+                    sys::PSY.System;
+                    kwargs...) where {M<:AbstractOperationModel,
+                                    T<:PM.AbstractPowerFormulation}
 
+This uses the Abstract Power Formulation to build the model reference and
+the optimization model and populates the operation model struct.
+
+***Note:*** the abstract operation model is set to the default operation model
+
+# Arguments
+-`op_model::Type{M} = where {M<:AbstractOperationModel`: Defines the type of the operation model
+-`::Type{T} where T<:PM.AbstractPowerFormulation`: The power formulation used for model ref & optimization model
+-`sys::PSY.System = c_sys5`: the system created in Power Systems
+
+# Output
+-`op_model::OperationModel`: The operation model contains the model type, model, Power
+Systems system, and optimization model.
+
+# Example
+```julia
+model_ref= ModelReference(CopperPlatePowerModel, devices, branches, services)
+OpModel = OperationModel(TestOptModel, model_ref, c_sys5_re; PTDF = PTDF5, optimizer = GLPK_optimizer)
+```
+
+# Accepted Key Words
+-`verbose::Bool = true`: verbose default is true
+-`PTDF::PTDF = PTDF`: Passes the PTDF matrix into the optimization model
+-`optimizer::union{Nothing,JuMP.OptimizerFactory} = GLPK_optimizer`: The optimizer gets passed
+into the optimization model the default is nothing.
+-`sequential_runs::Bool = false`: tells the model to do sequential runs
+-`initial_conditions::DICKDA = DICKDA()`: default of Dict{ICKey, Array{InitialCondition}}
+-`parameters::Bool = false`: enable JuMP parameters
+-`forecast::Bool = true`: if true, forecast collects the time steps in Power Systems,
+if false it runs for one time step
+-`initial_time::Dates.DateTime = PSY.get_forecasts_initial_time(sys)`: initial time of forecast
+
+"""
 function OperationModel(::Type{T},
                         sys::PSY.System;
                         kwargs...) where {T<:PM.AbstractPowerModel}
 
-    return OperationModel{DefaultOpModel}(T, sys; kwargs...)
+    return OperationModel(DefaultOpModel,
+                         T,
+                         sys; kwargs...)
 
 end
 
@@ -235,7 +356,7 @@ end
 
 
 function get_initial_conditions(op_model::OperationModel)
-    return get_initial_conditions(canonical.initial_conditions)
+    return op_model.canonical.initial_conditions
 end
 
 function get_initial_conditions(op_model::OperationModel,

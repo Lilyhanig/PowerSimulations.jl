@@ -9,6 +9,22 @@ mutable struct ModelReference
     services::Dict{Symbol, ServiceModel}
 end
 
+"""
+    ModelReference(::Type{T}) where {T<:PM.AbstractPowerFormulation}
+
+Creates a model reference of the Power Formulation, devices, branches, and services.
+
+# Arguments
+-`model::Type{T} where {T<:PM.AbstractPowerFormulation} = CopperPlatePowerModel`:
+-`devices::Dict{Symbol, DeviceModel} = devices`: device dictionary
+-`branches::Dict{Symbol, BranchModel} = branches`: branch dictionary
+-`services::Dict{Symbol, ServiceModel} = services`: service dictionary
+
+# Example
+```julia
+model_ref= ModelReference(CopperPlatePowerModel, devices, branches, services)
+```
+"""
 function ModelReference(::Type{T}) where {T<:PM.AbstractPowerModel}
 
     return  ModelReference(T,

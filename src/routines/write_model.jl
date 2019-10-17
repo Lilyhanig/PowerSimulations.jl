@@ -16,7 +16,9 @@ function write_data(vars_results::Dict{Symbol, DataFrames.DataFrame}, save_path:
 end
 
 
-function write_data(vars_results::OperationModel, save_path::AbstractString; kwargs...)
+function write_data(vars_results::Type{D},
+                    save_path::AbstractString;
+                    kwargs...) where {D <: AbstractOperationModel}
 
     file_type = get(kwargs, :file_type, Feather)
   
@@ -32,14 +34,30 @@ function write_data(vars_results::OperationModel, save_path::AbstractString; kwa
     return
 end
 
-function write_data(data::DataFrames.DataFrame, save_path::AbstractString, file_name::String; kwargs...)
+function write_data(canonical::CanonicalModel, save_path::String; kwargs...)
+
+    file_type = get(kwargs, :file_type, Feather)
+  
+    if file_type == Feather || file_type == CSV
+        for (k,v) in vars(canonical)
+            file_path = joinpath(save_path,"$(k).$(lowercase("$file_type"))")
+            file_type.write(file_path, _result_dataframe_vars(v))
+        end
+    else
+        error("unsupported file type: $file_type")
+    end
+
+    return
+end
+
+function write_data(data::DataFrames.DataFrame, save_path::String, file_name::String; kwargs...)
 
     if isfile(save_path)
         save_path = dirname(save_path)
     end
     file_type = get(kwargs, :file_type, Feather)
     if file_type == Feather || file_type == CSV
-        file_path = joinpath(save_path,"$(k).$(lowercase("$file_type"))")
+        file_path = joinpath(save_path,"$(file_name).$(lowercase("$file_type"))")
         file_type.write(file_path, data)
     else
         error("unsupported file type: $file_type")
@@ -47,6 +65,24 @@ function write_data(data::DataFrames.DataFrame, save_path::AbstractString, file_
 
     return
 end
+
+
+function write_data(data::DataFrames.DataFrame, save_path::String; kwargs...)
+
+    if isfile(save_path)
+        save_path = dirname(save_path)
+    end
+    file_type = get(kwargs, :file_type, Feather)
+    if file_type == Feather || file_type == CSV
+        file_path = joinpath(save_path,"time_stamp.$(lowercase("$file_type"))")
+        file_type.write(file_path, data)
+    else
+        error("unsupported file type: $file_type")
+    end
+
+    return
+end
+
 
 
 function _write_optimizer_log(optimizer_log::Dict, save_path::AbstractString)
@@ -65,15 +101,10 @@ end
 
 # These functions are writing directly to the feather file and skipping printing to memory.
 function _export_model_result(stage::_Stage, start_time::Dates.DateTime, save_path::String)
-    _write_variable_results(stage.canonical, save_path)
-    _write_time_stamps(get_time_stamp(stage, start_time), save_path)
+    write_data(stage.canonical, save_path)
+    write_data(get_time_stamp(stage, start_time), save_path)
     return
 
-    write_data(op_m, save_path)
-    write_data(get_time_stamp(op_m, start_time), save_path, "time_stamp")
-
-
-    return
 
 end
 
@@ -92,7 +123,7 @@ function _export_optimizer_log(optimizer_log::Dict{Symbol, Any},
         optimizer_log[:solve_time] = nothing #"Not Supported by solver"
     end
 
-    _write_optimizer_log(optimizer_log, path)
+  #  _write_optimizer_log(optimizer_log, path)
 
     return
 

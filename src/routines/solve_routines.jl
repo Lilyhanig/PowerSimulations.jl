@@ -180,8 +180,8 @@ function make_references(sim::Simulation, date_run::String)
     for (ix, stage) in enumerate(sim.stages)
 
         variables = Dict()
-        interval = PSY.get_forecasts_interval(stage.model.sys)
-        variable_names = collect(keys(sim.stages[ix].model.canonical.variables))
+        interval = PSY.get_forecasts_interval(stage.sys)
+        variable_names = collect(keys(sim.stages[ix].canonical.variables))
         for n in 1:length(variable_names)
             variables[variable_names[n]] = DataFrames.DataFrame(Date = Dates.DateTime[],
                                            Step = String[], File_Path = String[])

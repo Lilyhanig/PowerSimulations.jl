@@ -84,26 +84,33 @@ function _count_time_overlap(stage::String,
                             variable::Array, 
                             references::Dict{Any,Any})
 
-    ref_time_stamp = DataFrames.DataFrame()                    
+    
     date_df = references[stage][variable[1]]
     step_df = DataFrames.DataFrame(Date = Dates.DateTime[], 
                                    Step = String[], 
                                    File_Path = String[])
-
+    
     for n in 1:length(step)
         step_df = vcat(step_df,date_df[date_df.Step .== step[n], :])
+        
     end
+    ref = DataFrames.DataFrame()
+    
     for time in date_range
         
-        file_path = step_df[step_df.Date .== time, :File_Path][1]
-        time_file_path = joinpath(dirname(file_path), "time_stamp.feather")
-        temp_time_stamp = DataFrames.DataFrame(Feather.read("$time_file_path"))
-        t = size(temp_time_stamp, 1)
-        ref_time_stamp = vcat(ref_time_stamp,temp_time_stamp[(1:t-1),:])    
-
-    end  
-    
-    extra_time_length = size(unique(ref_time_stamp),1)./(length(step)+1)
+        try
+            file_path =  step_df[step_df.Date .== time, :File_Path][1]
+            time_file_path = joinpath(dirname(file_path), "time_stamp.feather")
+            temp_time_stamp = DataFrames.DataFrame(Feather.read("$time_file_path"))
+            t = size(temp_time_stamp, 1)
+            append!(ref,temp_time_stamp[(1:t-1),:])
+            
+        catch
+            @warn "The given date_range is outside the results time stamp."
+        end
+    end
+    @show ref
+    extra_time_length = size(unique(ref),1)./(length(step)+1)
     return extra_time_length
     end
 
@@ -150,7 +157,9 @@ function load_simulation_results(stage::String,
             step_df = vcat(step_df,date_df[date_df.Step .== step[n], :])
         end
         variable_dict[(variable[l])] = DataFrames.DataFrame()
+        
         for time in date_range
+            
             file_path = step_df[step_df.Date .== time, :File_Path][1]
             var = Feather.read("$file_path")
             correct_var_length = size(1:(size(var,1) - extra_time_length),1)

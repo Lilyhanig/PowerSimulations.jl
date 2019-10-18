@@ -106,7 +106,6 @@ run_sim_model!(sim::Simulation; verbose::Bool = false, kwargs...)
 `no_dict::Bool = true`: if :no_dict is true a reference dictionary is not created.
 if no_dict is not used or it's false, a reference dictionary is created.
 
-
 """
 function run_sim_model!(sim::Simulation; verbose::Bool = false, kwargs...)
     
@@ -171,7 +170,6 @@ verbose = true, system_to_file = false)
 run_sim_model!(sim::Simulation; verbose::Bool = false, kwargs...)
 references = make_references(sim, "2019-10-03T09-18-00-test")
 ```
-
 """
 
 function make_references(sim::Simulation, date_run::String)

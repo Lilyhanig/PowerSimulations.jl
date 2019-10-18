@@ -68,7 +68,7 @@ return extra_time_length
 end
 
 """
-results = load_simulation_results(stage, step,variable,references)
+    results = load_simulation_results(stage, step,variable,references)
 
 This function goes through the reference table of file paths and
 aggregates the results over time into a struct of type OperationModelResults
@@ -136,7 +136,7 @@ return results
 
 end
 """
-results = load_simulation_results(stage, references)
+    results = load_simulation_results(stage, references)
 
 This function goes through the reference table of file paths and
 aggregates the results over time into a struct of type OperationModelResults

@@ -140,7 +140,7 @@ function load_simulation_results(stage::String,
                                  step::Array,
                                  date_range::StepRange,
                                  variable::Array, 
-                                 references::Dict{Any,Any})
+                                 references::Dict{Any,Any}; kwargs...)
 
     
     variable_dict = Dict()
@@ -181,7 +181,10 @@ function load_simulation_results(stage::String,
     optimizer = Dict{Symbol, Any}(eachcol(Feather.read("$opt_file_path"),true))
     obj_value = Dict{Symbol, Any}(:OBJECTIVE_FUNCTION => optimizer[:obj_value])
     results = OperationModelResults(variable_dict, obj_value, optimizer, time_stamp)
-
+    if (:write in keys(kwargs)) == true
+        results_file_path = joinpath(dirname(dirname(dirname(file_path))), "results")
+        write_model_results(results, results_file_path)
+    end
     return results
 
 end

@@ -14,7 +14,7 @@ a dictionary of variables and their dataframe of results, and a time stamp.
 ```julia
 results = solve_op_model!(OpModel)
 ```
-# Accepted Key Words 
+# Accepted Key Words
 
 * save_path::String : If a file path is provided the results 
 automatically get written to feather files
@@ -102,6 +102,11 @@ verbose = true, system_to_file = false)
 run_sim_model!(sim::Simulation; verbose::Bool = false, kwargs...)
 ```
 
+# Accepted Key Words
+`no_dict::Bool = true`: if :no_dict is true a reference dictionary is not created.
+if no_dict is not used or it's false, a reference dictionary is created.
+
+
 """
 function run_sim_model!(sim::Simulation; verbose::Bool = false, kwargs...)
     
@@ -134,10 +139,12 @@ function run_sim_model!(sim::Simulation; verbose::Bool = false, kwargs...)
         end
         
     end
-    date_run = convert(String,last(split(dirname(sim.ref.raw),"/")))
-    references = make_references(sim, date_run)
-    
-    return references
+    if (:no_dict in keys(kwargs)) == true
+        date_run = convert(String,last(split(dirname(sim.ref.raw),"/")))
+        references = make_references(sim, date_run)
+        return references
+    else return
+    end
 
 end
 """ 

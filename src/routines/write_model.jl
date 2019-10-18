@@ -32,6 +32,7 @@ function _write_optimizer_log(optimizer_log::Dict, save_path::AbstractString)
     optimizer_log[:termination_status] = Int(optimizer_log[:termination_status])
     optimizer_log[:primal_status] = Int(optimizer_log[:primal_status])
     optimizer_log = DataFrames.DataFrame(optimizer_log)
+    
     file_path = joinpath(save_path,"optimizer_log.feather")
     Feather.write(file_path, optimizer_log)
 
@@ -81,7 +82,8 @@ function _export_optimizer_log(optimizer_log::Dict{Symbol, Any},
         optimizer_log[:solve_time] = MOI.get(canonical_model.JuMPmodel, MOI.SolveTime())
     catch
         @warn("SolveTime() property not supported by the Solver")
-        optimizer_log[:solve_time] = nothing #"Not Supported by solver"
+       # optimizer_log[:solve_time] = missing
+        #optimizer_log[:solve_time] = convert(Vector{Union{Missing,Dates.Time}}, [optimizer_log[:solve_time]]) #"Not Supported by solver"
     end
     _write_optimizer_log(optimizer_log, path)
     return

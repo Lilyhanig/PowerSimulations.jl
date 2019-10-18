@@ -183,7 +183,7 @@ function load_simulation_results(stage::String,
     results = OperationModelResults(variable_dict, obj_value, optimizer, time_stamp)
     if (:write in keys(kwargs)) == true
 
-        write_model_results(results, dirname(dirname(dirname(dirname(file_path)))),"results")
+        write_model_results(results, normpath("$file_path/../../../../"),"results")
     end
     return results
 

@@ -216,3 +216,38 @@ function make_references(sim::Simulation, date_run::String)
     end
     return references
 end
+
+function add_reference!(sim::Simulation, ref::Dict, date_run::String, extra_ref::String)
+
+    sim.ref.date_ref[1] = sim.daterange[1]
+    sim.ref.date_ref[2] = sim.daterange[1]
+
+    for (stage, variables) in ref
+        if stage == "stage-2"
+             ix = 2
+             interval = PSY.get_forecasts_interval(sim.stages[ix].sys)
+             ref["stage-2"][Symbol(extra_ref)] = DataFrames.DataFrame(Date = Dates.DateTime[],Step = String[], File_Path = String[])
+             for s in 1:(sim.steps)
+                 for run in 1:sim.stages[ix].executions
+                    sim.ref.current_time = sim.ref.date_ref[ix]
+                    initial_path = joinpath(dirname(dirname(sim.ref.raw)), date_run, "raw_output")
+                    full_path = joinpath(initial_path, "step-$(s)-stage-$(ix)",
+                                "$(sim.ref.current_time)", "$(extra_ref).feather")
+ 
+                    if isfile(full_path)
+                        date_df = DataFrames.DataFrame(Date = sim.ref.current_time, 
+                                                            Step = "step-$(s)", File_Path = full_path)
+                        ref["stage-2"][Symbol(extra_ref)] = vcat(ref["stage-2"][Symbol(extra_ref)], date_df)
+                    else
+                        println("$full_path, no such file")        
+                    end
+                    sim.ref.run_count[s][ix] += 1 
+                    sim.ref.date_ref[ix] = sim.ref.date_ref[ix] + interval
+ 
+                 end
+             end
+         
+         end
+     end
+     return ref
+end

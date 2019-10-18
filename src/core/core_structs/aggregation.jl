@@ -79,7 +79,7 @@ for the desired step range and variables
 -`step::Array{String} = ["step-1", "step-2", "step-3"]`: the steps of the results getting parsed
 -`variable::Array{Symbol} = [:P_ThermalStandard, :P_RenewableDispatch]`: the variables to be parsed
 -`references::Dict = ref`: the reference dictionary created in run_sim_model 
-or with make_reference_dictionary
+or with make_references
 
 # Example
 ```julia
@@ -144,7 +144,7 @@ aggregates the results over time into a struct of type OperationModelResults
 # Arguments
 -`stage::String = "stage-1"`: The stage of the results getting parsed, stage-1 or stage-2
 -`references::Dict = ref`: the reference dictionary created in run_sim_model 
-or with make_reference_dictionary
+or with make_references
 
 # Example
 ```julia

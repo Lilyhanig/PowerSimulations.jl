@@ -166,7 +166,8 @@ that contains the specific simulation run of the date run and "-test"
 
 # Example
 ```julia
-sim = Simulation("test", 7, stages, "/Users/lhanig/Downloads/"; verbose = true, system_to_file = false)
+sim = Simulation("test", 7, stages, "/Users/lhanig/Downloads/"; 
+verbose = true, system_to_file = false)
 run_sim_model!(sim::Simulation; verbose::Bool = false, kwargs...)
 references = make_references(sim, "2019-10-03T09-18-00-test")
 ```
@@ -193,7 +194,7 @@ function make_references(sim::Simulation, date_run::String)
                 sim.ref.current_time = sim.ref.date_ref[ix]
                 for n in 1:length(variable_names)
             
-                    initial_path = joinpath(dirname(dirname(sim.ref.raw)), date_run, "raw_output")
+                    initial_path = sim.ref.raw
                     full_path = joinpath(initial_path, "step-$(s)-stage-$(ix)",
                                 "$(sim.ref.current_time)", "$(variable_names[n]).feather")
         
@@ -217,11 +218,34 @@ function make_references(sim::Simulation, date_run::String)
     return references
 end
 
-function add_reference!(sim::Simulation, ref::Dict, date_run::String, extra_ref::String)
+""" 
+    add_reference!(sim::Simulation, ref::Dict, extra_ref::String)
+
+modifies the references dictionary by adding the variable 'extra_ref'
+to the references dictionary.
+
+# Arguments
+-`sim::Simulation = sim`: simulation object created by Simulation()
+-`ref::Dict = references`: this is the dictionary of file path references
+created in run_sim_model!() or in make_references
+-`extra_ref::String = "Price"`: this is the extra variable to be added
+
+# Example
+```julia
+sim = Simulation("test", 7, stages, "/Users/lhanig/Downloads/"; 
+verbose = true, system_to_file = false)
+run_sim_model!(sim::Simulation; verbose::Bool = false, kwargs...)
+references = make_references(sim, "2019-10-03T09-18-00-test")
+add_references!(sim, references, "Price")
+```
+
+"""
+
+function add_reference!(sim::Simulation, ref::Dict, extra_ref::String)
 
     sim.ref.date_ref[1] = sim.daterange[1]
     sim.ref.date_ref[2] = sim.daterange[1]
-
+    
     for (stage, variables) in ref
         if stage == "stage-2"
              ix = 2
@@ -230,7 +254,7 @@ function add_reference!(sim::Simulation, ref::Dict, date_run::String, extra_r
              for s in 1:(sim.steps)
                  for run in 1:sim.stages[ix].executions
                     sim.ref.current_time = sim.ref.date_ref[ix]
-                    initial_path = joinpath(dirname(dirname(sim.ref.raw)), date_run, "raw_output")
+                    initial_path = sim.ref.raw
                     full_path = joinpath(initial_path, "step-$(s)-stage-$(ix)",
                                 "$(sim.ref.current_time)", "$(extra_ref).feather")
  

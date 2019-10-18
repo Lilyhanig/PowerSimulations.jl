@@ -109,7 +109,7 @@ function _count_time_overlap(stage::String,
             @warn "The given date_range is outside the results time stamp."
         end
     end
-    @show ref
+    
     extra_time_length = size(unique(ref),1)./(length(step)+1)
     return extra_time_length
     end
@@ -182,8 +182,8 @@ function load_simulation_results(stage::String,
     obj_value = Dict{Symbol, Any}(:OBJECTIVE_FUNCTION => optimizer[:obj_value])
     results = OperationModelResults(variable_dict, obj_value, optimizer, time_stamp)
     if (:write in keys(kwargs)) == true
-        results_file_path = joinpath(dirname(dirname(dirname(file_path))), "results")
-        write_model_results(results, results_file_path)
+
+        write_model_results(results, dirname(dirname(dirname(dirname(file_path)))),"results")
     end
     return results
 

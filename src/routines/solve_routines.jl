@@ -140,10 +140,11 @@ function run_sim_model!(sim::Simulation; verbose::Bool = false, kwargs...)
         
     end
     if (:no_dict in keys(kwargs)) == true
+        return
+    else
         date_run = convert(String,last(split(dirname(sim.ref.raw),"/")))
         references = make_references(sim, date_run)
         return references
-    else return
     end
 
 end

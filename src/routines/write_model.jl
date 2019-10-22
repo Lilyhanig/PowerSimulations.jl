@@ -1,10 +1,10 @@
-<<<<<<< HEAD
 
 """
-write_data(vars_results::Dict{Symbol, DataFrames.DataFrame}, save_path::AbstractString; kwargs...)
+    write_data(vars_results::Dict{Symbol, DataFrames.DataFrame},
+               save_path::AbstractString; kwargs...)
 
-Receives the variables dictionary from the operation model results and writes each variable dataframe 
-to a file. The default file type is feather.
+Receives the variables dictionary from the operation model results and writes 
+each variable dataframe to a file. The default file type is feather.
 
 # Arguments
 -`vars_results::Dict{Symbol, DataFrames.DataFrame} = res.variables`: dictionary of DataFrames
@@ -16,14 +16,12 @@ res = solve_op_model!(op_model)
 write_data(res.variables, "Users/downloads")
 ```
 # Accepted Key Words 
--`file_type::String = CSV`: default filetype is Feather, but this key word can be used to make it CSV.
-if a different file type is desired the code will have to be changed to accept it.
-
+-`file_type::String = CSV`: default filetype is Feather, but this key word can be 
+used to make it CSV. If a different file type is desired the code will have to be 
+changed to accept it.
 """
-=======
-# taking the outputted files for the variable DataFrame and writing them to a featherfile
->>>>>>> 4a1977868adc4880ad4d88c595421239ff2140d8
-function write_data(vars_results::Dict{Symbol, DataFrames.DataFrame}, save_path::AbstractString; kwargs...)
+function write_data(vars_results::Dict{Symbol, DataFrames.DataFrame}, 
+                    save_path::AbstractString; kwargs...)
     file_type = get(kwargs, :file_type, Feather)
     if file_type == Feather || file_type == CSV
         for (k,v) in vars_results
@@ -36,8 +34,33 @@ function write_data(vars_results::Dict{Symbol, DataFrames.DataFrame}, save_path:
 
     return
 end
+"""
+    write_data(data::DataFrames.DataFrame,
+               save_path::AbstractString, 
+               file_name::String; kwargs...)
 
-function write_data(data::DataFrames.DataFrame, save_path::AbstractString, file_name::String; kwargs...)
+Receives a dataframe from the operation model results and writes it 
+to a file. The default file type is feather.
+
+# Arguments
+-`data::DataFrames.DataFrame = data`: dataframe of results
+-`save_path::AbstractString`: the file path that the variable file should 
+be written to populate.
+-`file_name::String`: the name of the file that contains the dataframe
+
+# Example
+```julia
+res = solve_op_model!(op_model)
+write_data(res.variables[1], "Users/downloads", "variable-1")
+```
+# Accepted Key Words 
+-`file_type::String = CSV`: default filetype is Feather, but this key word can be used to make it CSV.
+if a different file type is desired the code will have to be changed to accept it.
+"""
+function write_data(data::DataFrames.DataFrame, 
+                    save_path::AbstractString, 
+                    file_name::String; kwargs...)
+
     if isfile(save_path)
         save_path = dirname(save_path)
     end

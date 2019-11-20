@@ -92,14 +92,17 @@ export set_device_model!
 export make_references
 export execute!
 ## Utils Exports
+export sim_results_container
 export write_op_problem
 export write_results
 export load_operation_results
 export load_simulation_results
+export write_to_CSV
 export get_all_constraint_index
 export get_all_var_index
 export get_con_index
 export get_var_index
+
 # Plotting Utils
 export sort_data
 export get_stacked_plot_data
@@ -111,8 +114,6 @@ export stack_plot
 export report
 export make_fuel_dictionary
 export fuel_plot
-
-export load_simulation_results
 
 #################################################################################
 # Imports
@@ -218,12 +219,13 @@ include("routines/solve_routines.jl")
 
 #Utils
 include("utils/optimization_debugging.jl")
-include("utils/printing.jl")
 include("utils/plot_results.jl")
 include("utils/plot_recipes.jl")
 include("utils/aggregation.jl")
 include("utils/call_plots.jl")
-
+include("utils/check_results.jl")
+include("utils/simulation_results_container.jl")
+include("utils/printing.jl")
 #Routines
 include("routines/write_results.jl")
 

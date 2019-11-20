@@ -21,7 +21,7 @@ function construct_device!(canonical::Canonical, sys::PSY.System,
 
     devices = PSY.get_components(B, sys)
 
-    if validate_available_devices(devices,B)
+    if validate_available_devices(devices, B)
         return
     end
 

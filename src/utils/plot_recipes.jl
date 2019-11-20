@@ -22,7 +22,7 @@ another series:
 
 RecipesBase.@recipe function StackedPlot(results::StackedArea, variable::String)
 
-    time = convert.(Dates.DateTime,results.time_range)
+    time = convert.(Dates.DateTime, results.time_range)
     n = length(time)
     time_interval = Dates.Hour(convert(Dates.DateTime,time[n])- convert(Dates.DateTime,time[n-1]))*n
     data = results.data_matrix
@@ -40,7 +40,7 @@ RecipesBase.@recipe function StackedPlot(results::StackedArea, variable::String)
     sx = [time[1:n]; reverse(time[1:n])]
      for c=1:size(z,2)
         if c !== 1
-            sy = hcat(sy,vcat(z[:,c],reverse(z[:,c-1])))
+            sy = hcat(sy,vcat(z[:, c], reverse(z[:, c-1])))
         end
     end
 
@@ -53,7 +53,7 @@ end
 
 RecipesBase.@recipe function StackedGeneration(res::StackedGeneration)
 
-    time = convert.(Dates.DateTime,res.time_range)
+    time = convert.(Dates.DateTime, res.time_range)
     n = length(time)
     time_interval = Dates.Hour(convert(Dates.DateTime,time[n])- convert(Dates.DateTime,time[n-1]))*n
     data = res.data_matrix
@@ -71,7 +71,7 @@ RecipesBase.@recipe function StackedGeneration(res::StackedGeneration)
     sx = [time[1:n]; reverse(time[1:n])]
   for c=1:size(z,2)
     if c !== 1
-      sy = hcat(sy,vcat(z[:,c],reverse(z[:,c-1])))
+      sy = hcat(sy,vcat(z[:, c], reverse(z[:, c-1])))
     end
   end
 
@@ -85,7 +85,7 @@ end
 
 RecipesBase.@recipe function BarPlot(res::BarPlot, variable::String)
 
-  time = convert.(Dates.DateTime,res.time_range)
+  time = convert.(Dates.DateTime, res.time_range)
   n = length(time)
   time_interval = Dates.Hour(convert(Dates.DateTime,time[n])- convert(Dates.DateTime,time[n-1]))*n
   data_point = res.bar_data
@@ -106,7 +106,7 @@ RecipesBase.@recipe function BarPlot(res::BarPlot, variable::String)
     # Create filled polygon
   for c=1:size(z,2)
    sx = [[4,5]; [5,4]]
-   sy = vcat(z[:,c], c==1 ? zeros(n) : reverse(z[:,c-1]))
+   sy = vcat(z[:, c], c==1 ? zeros(n) : reverse(z[:, c-1]))
    RecipesBase.@series sx, sy
  end
 
@@ -114,7 +114,7 @@ end
 
 RecipesBase.@recipe function BarGen(res::BarGeneration)
 
-    time = convert.(Dates.DateTime,res.time_range)
+    time = convert.(Dates.DateTime, res.time_range)
     n = 2
     data_point = res.bar_data
     data = [data_point; data_point]
@@ -132,7 +132,7 @@ RecipesBase.@recipe function BarGen(res::BarGeneration)
     xlims := (1, 8)
     for c=1:size(z,2)
         sx = [[4,5]; [5,4]]
-        sy = vcat(z[:,c], c==1 ? zeros(n) : reverse(z[:,c-1]))
+        sy = vcat(z[:, c], c==1 ? zeros(n) : reverse(z[:, c-1]))
         RecipesBase.@series sx, sy
     end
 end

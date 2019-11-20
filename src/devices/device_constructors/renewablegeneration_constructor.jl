@@ -96,7 +96,7 @@ function construct_device!(canonical::Canonical, sys::PSY.System,
 
     construct_device!(canonical,
                       sys,
-                      DeviceModel(PSY.RenewableFix,RenewableFixed),
+                      DeviceModel(PSY.RenewableFix, RenewableFixed),
                       system_formulation;
                       kwargs...)
 

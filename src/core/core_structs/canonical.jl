@@ -64,7 +64,7 @@ end
 
 function _canonical_init(bus_numbers::Vector{Int64},
                         jump_model::JuMP.AbstractModel,
-                        optimizer::Union{Nothing,JuMP.OptimizerFactory},
+                        optimizer::Union{Nothing, JuMP.OptimizerFactory},
                         transmission::Type{S},
                         time_steps::UnitRange{Int64},
                         resolution::Dates.Period,
@@ -146,7 +146,7 @@ end
 
 function Canonical(::Type{T},
                    sys::PSY.System,
-                   optimizer::Union{Nothing,JuMP.OptimizerFactory};
+                   optimizer::Union{Nothing, JuMP.OptimizerFactory};
                    kwargs...) where {T<:PM.AbstractPowerModel}
 
     PSY.check_forecast_consistency(sys)

@@ -70,7 +70,7 @@ OpModel = OperationsProblem(TestOpProblem, template, system; optimizer = optimiz
 # Accepted Key Words
 - `verbose::Bool`: verbose default is true
 - `PTDF::PTDF`: Passes the PTDF matrix into the optimization model
-- `optimizer::union{Nothing,JuMP.OptimizerFactory} = GLPK_optimizer`: The optimizer gets passed
+- `optimizer::union{Nothing, JuMP.OptimizerFactory} = GLPK_optimizer`: The optimizer gets passed
 into the optimization model the default is nothing.
 - `initial_conditions::DICKDA`: default of Dict{ICKey, Array{InitialCondition}}
 - `parameters::Bool`: enable JuMP parameters
@@ -122,7 +122,7 @@ OpModel = OperationsProblem(TestOpProblem, template, system; optimizer = optimiz
 # Accepted Key Words
 - `verbose::Bool`: verbose default is true
 - `PTDF::PTDF`: Passes the PTDF matrix into the optimization model
-- `optimizer::union{Nothing,JuMP.OptimizerFactory}`: The optimizer gets passed
+- `optimizer::union{Nothing, JuMP.OptimizerFactory}`: The optimizer gets passed
 into the optimization model the default is nothing.
 - `initial_conditions::DICKDA`: default of Dict{ICKey, Array{InitialCondition}}
 - `parameters::Bool`: enable JuMP parameters
@@ -172,7 +172,7 @@ OpModel = OperationsProblem(TestOpProblem, template, system; optimizer = optimiz
 # Accepted Key Words
 - `verbose::Bool`: verbose default is true
 - `PTDF::PTDF`: Passes the PTDF matrix into the optimization model
-- `optimizer::union{Nothing,JuMP.OptimizerFactory}`: The optimizer gets passed
+- `optimizer::union{Nothing, JuMP.OptimizerFactory}`: The optimizer gets passed
 into the optimization model the default is nothing.
 - `initial_conditions::DICKDA`: default of Dict{ICKey, Array{InitialCondition}}
 - `parameters::Bool`: enable JuMP parameters

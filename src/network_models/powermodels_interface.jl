@@ -291,7 +291,7 @@ end
 #### PM accessor functions ########
 
 function PMvarmap(system_formulation::Type{S}) where {S<:PM.AbstractDCPModel}
-    pm_var_map = Dict{Type,Dict{Symbol, Union{Symbol,NamedTuple}}}()
+    pm_var_map = Dict{Type, Dict{Symbol, Union{Symbol,NamedTuple}}}()
 
     pm_var_map[PSY.Bus] = Dict(:va => :theta)
     pm_var_map[PSY.ACBranch] = Dict(:p => (from_to = :Fp, to_from = nothing))
@@ -301,7 +301,7 @@ function PMvarmap(system_formulation::Type{S}) where {S<:PM.AbstractDCPModel}
 end
 
 function PMvarmap(system_formulation::Type{S}) where {S<:PM.AbstractActivePowerModel}
-    pm_var_map = Dict{Type,Dict{Symbol, Union{Symbol,NamedTuple}}}()
+    pm_var_map = Dict{Type, Dict{Symbol, Union{Symbol,NamedTuple}}}()
 
     pm_var_map[PSY.Bus] = Dict(:va => :theta)
     pm_var_map[PSY.ACBranch] = Dict(:p => (from_to = :FpFT, to_from = :FpTF))
@@ -311,7 +311,7 @@ function PMvarmap(system_formulation::Type{S}) where {S<:PM.AbstractActivePowerM
 end
 
 function PMvarmap(system_formulation::Type{S}) where {S<:PM.AbstractPowerModel}
-    pm_var_map = Dict{Type,Dict{Symbol, Union{Symbol,NamedTuple}}}()
+    pm_var_map = Dict{Type, Dict{Symbol, Union{Symbol,NamedTuple}}}()
 
     pm_var_map[PSY.Bus] = Dict(:va => :theta,
                                 :vm => :Vm)
@@ -368,8 +368,8 @@ function add_pm_var_refs!(canonical::Canonical,
         for (pm_v, ps_v) in pm_var_map[d_class]
             if pm_v in pm_var_names
                 for dir in fieldnames(typeof(ps_v))
-                    isnothing(getfield(ps_v,dir)) && continue
-                    var_name = Symbol("$(getfield(ps_v,dir))_$(d_type)")
+                    isnothing(getfield(ps_v, dir)) && continue
+                    var_name = Symbol("$(getfield(ps_v, dir))_$(d_type)")
                     canonical.variables[var_name] = PSI._container_spec(canonical.JuMPmodel,
                                                                         (PSY.get_name(d[2]) for d in devices),
                                                                         time_steps)

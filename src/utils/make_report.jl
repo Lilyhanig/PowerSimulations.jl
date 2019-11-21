@@ -26,10 +26,14 @@ report(results, out_path; jmd = jmd)
 jmd has a default of ".../pwd()/report_design/report_design.jmd"
 
 """
+<<<<<<< HEAD
 
 
 
 function report(res::Results, out_path::String; kwargs...)
+=======
+function report(res::Results,out_path::String; kwargs...)
+>>>>>>> 78ddf7be737e5855079aac40c06d34f7929b040a
 
     doctype = get(kwargs, :doctype, "md2pdf")
     default_string = joinpath(pwd(), "src/utils/report_design/report_design.jmd")

@@ -59,8 +59,18 @@ function fuel_plot(res::PSI.OperationsProblemResults, generator_dict::Dict; kwar
     display(P1)
     display(P2)
 end
-  
-  
+
+function fuel_plot(res::PSI.CheckResults, generator_dict::Dict; kwargs...)
+    results = OperationsProblemResults(res.variables, res.total_cost, 
+    res.optimizer_log, res.time_stamp)
+    fuel_plot(results, generator_dict; kwargs...)
+end
+
+function fuel_plot(res::PSI.AggregatedResults, generator_dict::Dict; kwargs...)
+    results = OperationsProblemResults(res.variables, res.total_cost, 
+    res.optimizer_log, res.time_stamp)
+    fuel_plot(results, generator_dict; kwargs...)
+end
 """
    bar_plot(OperationsProblemResults)
   
@@ -94,17 +104,22 @@ function bar_plot(res::OperationsProblemResults; kwargs...)
               [Colors.RGBA(0.8, 0.6, 0.3, 1)], [:red]) # khaki
     seriescolor = get(kwargs, :seriescolor, default)
     key_name = string.(collect(keys(res.variables)))
-    for i in 1:length(key_name)
-        variable_bar = get_bar_plot_data(res, key_name[i])
-        p = RecipesBase.plot(variable_bar, key_name[i]; seriescolor = seriescolor)
-        display(p)
+    for name in key_name
+            variable_bar = get_bar_plot_data(res, name)
+            p = RecipesBase.plot(variable_bar, name; seriescolor = seriescolor)
+            display(p)
     end
     bar_gen = get_bar_gen_data(res)
     p2 = RecipesBase.plot(bar_gen; seriescolor = seriescolor)
     display(p2)
 end
 
-function bar_plot(res::AggregatedResults; kwargs...)
+function bar_plot(res::PSI.AggregatedResults; kwargs...)
+    results = OperationsProblemResults(res.variables, res.total_cost, 
+    res.optimizer_log, res.time_stamp)
+    bar_plot(results; kwargs...)
+end
+function bar_plot(res::PSI.CheckResults; kwargs...)
     results = OperationsProblemResults(res.variables, res.total_cost, 
     res.optimizer_log, res.time_stamp)
     bar_plot(results; kwargs...)
@@ -150,6 +165,12 @@ function stack_plot(res::OperationsProblemResults; kwargs...)
 end
 
 function stack_plot(res::PSI.AggregatedResults; kwargs...)
+  results = OperationsProblemResults(res.variables, res.total_cost, 
+  res.optimizer_log, res.time_stamp)
+  stack_plot(results; kwargs...)
+end
+
+function stack_plot(res::PSI.CheckResults; kwargs...)
   results = OperationsProblemResults(res.variables, res.total_cost, 
   res.optimizer_log, res.time_stamp)
   stack_plot(results; kwargs...)

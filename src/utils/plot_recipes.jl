@@ -31,10 +31,11 @@ RecipesBase.@recipe function StackedPlot(results::StackedArea, variable::String)
     title := variable
     label := results.labels
     legend := :topleft
-    time_interval = Dates.Hour(convert(Dates.DateTime,time[n])-convert(Dates.DateTime,time[1]))
+    interval = time[2]-time[1]
+    time_interval = convert(Dates.Hour,interval*n)
     xlabel := "$time_interval"
     ylabel := "Generation (MW)"
-    xtick := time[1]:Dates.Hour(12):time[n]
+    xtick := time[1]:time_interval:time[n]+interval
     #create filled polygon
     sy = vcat(z[:,1],zeros(n))
     sx = [time[1:n]; reverse(time[1:n])]
@@ -59,13 +60,14 @@ RecipesBase.@recipe function StackedGeneration(res::StackedGeneration)
     z = cumsum(data, dims = 2)
     # Plot Attributes
     grid := false
-    title := "Generation Type"
+    title := "Generator"
     label := res.labels
     legend := :bottomright
-    time_interval = Dates.Hour(convert(Dates.DateTime,time[n])-convert(Dates.DateTime,time[1]))
+    interval = time[2]-time[1]
+    time_interval = convert(Dates.Hour,interval*n)
     xlabel := "$time_interval"
     ylabel := "Generation (MW)"
-    xtick := time[1]:Dates.Hour(12):time[n]
+    xtick := time[1]:time_interval:time[n]+interval
     # Create filled polygon
     sy = vcat(z[:,1],zeros(n))
     sx = [time[1:n]; reverse(time[1:n])]
@@ -95,9 +97,9 @@ RecipesBase.@recipe function BarPlot(res::BarPlot, variable::String)
   title := variable
   seriestype := :shape
   label := res.labels
-  start_time = time[1]
-  time_interval = Dates.Hour(convert(Dates.DateTime,time[n])-convert(Dates.DateTime,time[1]))
-  xlabel := "$time_interval, $start_time"
+  interval = time[2]-time[1]
+  time_interval = convert(Dates.Hour,interval*n)
+  xlabel := "$time_interval, $(time[1])"
   ylabel := "Generation(MW)"
   xlims := (1, 8)
   xticks := false
@@ -120,10 +122,14 @@ RecipesBase.@recipe function BarGen(res::BarGeneration)
     z = cumsum(data, dims = 2)
     # Plot Attributes
     grid := false
-    title := "Generation Type"
+    title := "Generator"
+    start_time = time[1]
+    interval = time[2]-time[1]
+    time_interval = convert(Dates.Hour,interval*length(time))
+    xlabel := "$time_interval, $(time[1])"
+    ylabel := "Generation(MW)"
     seriestype := :shape
     label := res.labels
-    start_time = time[1]
     xticks := false
     xlims := (1, 8)
     for c=1:size(z,2)

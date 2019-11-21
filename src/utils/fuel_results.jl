@@ -1,19 +1,19 @@
-function _get_iterator(sys::PSY.System, res::OperationModelResults)
+function _get_iterator(sys::PSY.System, res::OperationsProblemResults)
 
-    iterator = []
+    iterators = []
     for (k,v) in res.variables
         if "$k"[1:2] == "P_"
             datatype = (split("$k", "P_")[2])
             if datatype == "ThermalStandard"
-            iterator = vcat(iterator,collect(PSY.get_components(PSY.ThermalStandard,sys)))
+            iterators = vcat(iterators,collect(PSY.get_components(PSY.ThermalStandard,sys)))
             elseif datatype == "RenewableDispatch"
-                iterator = vcat(iterator,collect(PSY.get_components(PSY.RenewableDispatch,sys)))  
+                iterators = vcat(iterators,collect(PSY.get_components(PSY.RenewableDispatch,sys)))  
             end 
         end
     end
     iterator_dict = Dict{Any,Any}()
-    for i in 1: length(iterator)
-        name = iterator[i].name
+    for iterator in iterators
+        name = iterator.name
         iterator_dict[name] = []
         if isdefined(iterator[i].tech, :fuel)  
             iterator_dict[name] = vcat(iterator_dict[name], (NamedTuple{(:primemover, :fuel)},
@@ -39,7 +39,7 @@ kwargs: :category_dict = dictionary{String, NamedTuple} if a different
 type of stacking is desired.
 
 """
-function make_fuel_dictionary(sys::PSY.System, res::OperationModelResults; kwargs...)
+function make_fuel_dictionary(sys::PSY.System, res::OperationsProblemResults; kwargs...)
 
     category_dict = Dict()
     category_dict["Solar"] = NamedTuple{(:primemover, :fuel)},(PSY.PVe, nothing)
@@ -71,11 +71,20 @@ function make_fuel_dictionary(sys::PSY.System, res::OperationModelResults; kwarg
             delete!(generator_dict, "$category")
         end
     end
-
     return generator_dict
 end
+function make_fuel_dictionary(system::PSY.System, res::PSI.CheckResults; kwargs...)
+    results = OperationsProblemResults(res.variables, res.total_cost, 
+    res.optimizer_log, res.time_stamp)
+    make_fuel_dictionary(system, results; kwargs...)
+end
+function make_fuel_dictionary(system::PSY.System, res::PSI.AggregatedResults; kwargs...)
+    results = OperationsProblemResults(res.variables, res.total_cost, 
+    res.optimizer_log, res.time_stamp)
+    make_fuel_dictionary(system, results; kwargs...)
+end
 
-function _aggregate_data(res::PSI.OperationModelResults, generator_dict::Dict)
+function _aggregate_data(res::PSI.OperationsProblemResults, generator_dict::Dict)
 
    
     All_var = DataFrames.DataFrame()
@@ -115,7 +124,7 @@ generator_dict = make_fuel_dictionary(res, c_sys5_re)
 fuel_plot(res, generator_dict)
 
 """
-function get_stacked_aggregation_data(res::OperationModelResults, generator_dict::Dict)
+function get_stacked_aggregation_data(res::OperationsProblemResults, generator_dict::Dict)
     
     order = (["Nuclear", "Coal", "Hydro", "Gas_CC",
     "Gas_CT", "Storage", "Oil_ST", "Oil_CT",
@@ -146,7 +155,7 @@ function get_stacked_aggregation_data(res::OperationModelResults, generator_dict
     
     return PowerSimulations.StackedGeneration(time_range, data_matrix, legend)
 end
-function get_bar_aggregation_data(res::PSI.OperationModelResults, generator_dict::Dict)
+function get_bar_aggregation_data(res::PSI.OperationsProblemResults, generator_dict::Dict)
 
     order = (["Nuclear", "Coal", "Hydro", "Gas_CC",
     "Gas_CT", "Storage", "Oil_ST", "Oil_CT",

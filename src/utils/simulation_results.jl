@@ -37,10 +37,10 @@ results = load_simulation_results(stage,step, variable, SimulationResultsReferen
 - `write::Bool`: if true, the aggregated results get written back to the results file in the folder structure
 """
 function load_simulation_results(SimulationResultsReference::SimulationResultsReference,
-                                 stage_number::Int64,
+                                 stage_name::String,
                                  step::Array,
                                  variable::Array; kwargs...)
-    stage = "stage-$stage_number"
+    stage = "stage-$stage_name"
     references = SimulationResultsReference.ref
     variables = Dict() # variable dictionary
     duals = Dict()
@@ -104,8 +104,8 @@ results = load_simulation_results(stage, step, variable, SimulationResultsRefere
 - `write::Bool`: if true, the aggregated results get written back to the results file in the folder structure
 """
 
-function load_simulation_results(SimulationResultsReference::SimulationResultsReference, stage_number::Int; kwargs...)
-    stage = "stage-$stage_number"
+function load_simulation_results(SimulationResultsReference::SimulationResultsReference, stage_name::String; kwargs...)
+    stage = "stage-$stage_name"
     references = SimulationResultsReference.ref
     variables = Dict()
     duals = Dict()
@@ -114,7 +114,6 @@ function load_simulation_results(SimulationResultsReference::SimulationResultsRe
     variable = setdiff(variable, duals)
     time_stamp = DataFrames.DataFrame(Range = Dates.DateTime[])
     time_length = SimulationResultsReference.chronologies[stage]
-
     for l in 1:length(variable)
         date_df = references[stage][variable[l]]
         variables[(variable[l])] = DataFrames.DataFrame()
@@ -158,22 +157,29 @@ function check_file_integrity(path::String)
     text = open(file_path, "r") do io
         return readlines(io)
     end
-
     matched = true
     for line in text
         expected_hash, file_name = split(line)
         actual_hash = compute_sha256(file_name)
         if expected_hash != actual_hash
-            @error "hash mismatch for file" file_name expected_hash actual_hash
+           @debug "hash mismatch for file" file_name expected_hash actual_hash
             matched = false
-        else
-            @info "File hash values matched." file_name
         end
     end
-
     if !matched
         throw(IS.DataFormatError(
             "The hash value in the written files does not match the read files, results may have been tampered."
         ))
     end
 end
+
+function get_variable_names(sim::Simulation, stage::Any)
+    return collect(keys(sim.stages[stage].internal.psi_container.variables))
+end
+function get_reference(sim_results::SimulationResultsReference, stage::String, step::Int, variable::Symbol) 
+    file_paths = sim_results.ref["stage-$stage"][variable]
+    file_paths = filter(file_paths -> file_paths.Step == "step-$step", file_paths)[:, 3]
+    return file_paths
+end
+
+get_psi_container(sim::Simulation, stage::Any) = sim.stages[stage].internal.psi_container

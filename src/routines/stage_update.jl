@@ -30,7 +30,7 @@ function parameter_update!(param_reference::UpdateRef{JuMP.VariableRef},
                            sim::Simulation)
     stage = get_stage(sim, stage_number)
     param_array = get_parameters(stage.internal.psi_container, param_reference)
-    chronolgy_dict = get_stage(sim, stage_number).internal.chronolgy_dict
+    @show chronolgy_dict = get_stage(sim, stage_number).internal.chronolgy_dict
     current_stage = get_stage(sim, stage_number)
     for (k, ref) in chronolgy_dict
         feed_forward_update(ref, param_reference, param_array, current_stage, get_stage(sim, k))

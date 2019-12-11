@@ -65,8 +65,5 @@ end
         @test :nodal_balance_active in keys(op_problem.psi_container.expressions)
         @test (:params in keys(op_problem.psi_container.JuMPmodel.ext)) == p
         end
-
-
     end
-
 end

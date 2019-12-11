@@ -12,7 +12,7 @@ end
     DeviceModel(::Type{D}, ::Type{B}) where {D<:PSY.Device,
                                        B<:AbstractDeviceFormulation}
 This validates the device formulation for the Power System Device and the
-abstract device formulation and returns  Power System Device and the
+abstract device formulation and returns Power System Device and the
 abstract device formulation if the power system device is a concrete type.
 
 # Arguments

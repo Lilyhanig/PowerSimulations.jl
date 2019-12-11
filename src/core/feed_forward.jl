@@ -195,7 +195,6 @@ function semicontinuousrange_ff(psi_container::PSIContainer,
     lb_name = _middle_rename(cons_name, "_", "lb")
 
     variable = get_variable(psi_container, var_name)
-
     axes = JuMP.axes(variable)
     set_name = axes[1]
     @assert axes[2] == time_steps
@@ -273,9 +272,8 @@ function feed_forward_update(sync::Chron,
                             to_stage::Stage,
                             from_stage::Stage) where Chron <: AbstractChronology
     !(to_get_execution_count(stage) % sync.to_steps == 0) && return
-
-    var_count = to_get_execution_count(stage) ÷ sync.to_steps
-
+    @show var_count = to_get_execution_count(stage) ÷ sync.to_steps
+    @show axes(param_array)[1]
     for device_name in axes(param_array)[1]
         var_value = get_stage_variable(Chron, from_stage, device_name, param_reference, var_count)
         PJ.fix(param_array[device_name], var_value)

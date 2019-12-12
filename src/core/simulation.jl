@@ -185,8 +185,8 @@ function _check_steps(sim::Simulation, stage_initial_times::Dict{Int64, Vector{D
         forecast_count = length(stage_initial_times[stage_number])
         stage = get(sim.stages, stage_name, nothing)
         if sim.steps*stage.internal.execution_count > forecast_count
-            error("The number of available time series is not enough to perform the
-                   desired amount of simulation steps.")
+            error("The number of available time series ($(forecast_count)) is not enough to perform the
+                  desired amount of simulation steps ($(sim.steps*stage.internal.execution_count)).")
         end
     end
     return

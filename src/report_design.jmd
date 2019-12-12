@@ -1,0 +1,37 @@
+---
+title : Weave example
+author : SIIP
+date: 9th September 2019
+
+---
+
+
+# Bar Plots
+
+```julia; echo = false
+using PowerSimulations
+using Plots
+using RecipesBase
+gr()
+
+bar_plot(WEAVE_ARGS[res])
+```
+
+# Stack Plots
+
+```julia; echo = false
+
+stack_plot(WEAVE_ARGS[res])
+```
+
+# Tables
+
+```julia; echo = false
+
+WEAVE_ARGS[P_therm]
+```
+
+```julia; echo = false
+
+WEAVE_ARGS[P_renew]
+```

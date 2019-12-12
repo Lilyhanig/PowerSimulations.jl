@@ -71,7 +71,7 @@ function make_references(sim::Simulation, date_run::String; kwargs...)
                 sim.internal.current_time = sim.internal.date_ref[stage_number]
                 for name in variable_names
                     full_path = joinpath(sim.internal.raw_dir, "step-$(s)-stage-$(stage_name)",
-                                replace_chars("$(sim.internal.current_time)", ":", "-"), "$(name).feather")
+                                replace_chars("$(round(sim.internal.current_time, Dates.Minute))", ":", "-"), "$(name).feather")
                     if isfile(full_path)
                         date_df = DataFrames.DataFrame(Date = sim.internal.current_time,
                                                        Step = "step-$(s)", File_Path = full_path)

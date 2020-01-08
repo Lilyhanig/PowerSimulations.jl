@@ -171,8 +171,8 @@ function test_sequence_build(file_path::String)
 end
 
 try
-    test_sequence_build(file_path)
+    test_sequence_build(path)
 finally
     @info("removing test files")
-    rm(file_path, recursive=true)
+    rm(path, recursive=true)
 end

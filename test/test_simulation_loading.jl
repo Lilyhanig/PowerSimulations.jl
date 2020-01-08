@@ -3,7 +3,7 @@ path = (joinpath(pwd(), "test_reading_results"))
 !isdir(path) && mkdir(path)
 
 
-function test_load_simulation(file_path)
+function test_load_simulation(file_path::String)
     stages_definition = Dict("UC" => Stage(GenericOpProblem, template_uc, c_sys5_uc, GLPK_optimizer),
                         "ED" => Stage(GenericOpProblem, template_ed, c_sys5_ed, GLPK_optimizer))
 
@@ -165,8 +165,8 @@ function test_load_simulation(file_path)
 
 end
 try
-    test_load_simulation()
+    test_load_simulation(path)
 finally
     @info("removing test files")
-    rm(file_path, recursive=true)
+    rm(path, recursive=true)
 end

@@ -189,8 +189,8 @@ function test_chronology(file_path::String)
     end
 end
 try
-    test_chronology(file_path)
+    test_chronology(path)
 finally
     @info("removing test files")
-    rm(file_path, recursive=true)
+    rm(path, recursive=true)
 end

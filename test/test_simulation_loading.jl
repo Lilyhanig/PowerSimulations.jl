@@ -1,11 +1,9 @@
-IS.configure_logging(console_level = Logging.Info)
-if !isdir(joinpath(pwd(), "testing_reading_results"))
-    file_path = mkdir(joinpath(pwd(), "testing_reading_results"))
-else
-    file_path = (joinpath(pwd(), "testing_reading_results"))
-end
+#IS.configure_logging(console_level = Logging.Info)
+path = (joinpath(pwd(), "test_reading_results"))
+!isdir(path) && mkdir(path)
 
-function test_load_simulation()
+
+function test_load_simulation(file_path)
     stages_definition = Dict("UC" => Stage(GenericOpProblem, template_uc, c_sys5_uc, GLPK_optimizer),
                         "ED" => Stage(GenericOpProblem, template_ed, c_sys5_ed, GLPK_optimizer))
 

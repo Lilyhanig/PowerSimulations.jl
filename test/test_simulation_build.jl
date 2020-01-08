@@ -1,6 +1,6 @@
-IS.configure_logging(console_level = Logging.Info)
-file_path = joinpath(pwd(), "testing_sequence_build")
-!isdir(file_path) && mkdir(file_path)
+#IS.configure_logging(console_level = Logging.Info)
+path = joinpath(pwd(), "test_sequence_build")
+!isdir(path) && mkdir(path)
 
 function test_sequence_build(file_path::String)
 
@@ -151,20 +151,20 @@ function test_sequence_build(file_path::String)
     end
     @testset "too many steps for forecast" begin
         sequence = SimulationSequence(order = Dict(1 => "UC", 2 => "ED"),
-                    intra_stage_chronologies = Dict(("UC"=>"ED") => Synchronize(from_steps = 24, to_executions = 1)),
-                    horizons = Dict("UC" => 24, "ED" => 12),
-                    intervals = Dict("UC" => Hour(24), "ED" => Hour(1)),
-                    feed_forward = Dict(("ED", :devices, :Generators) => SemiContinuousFF(binary_from_stage = :ON, affected_variables = [:P])),
-                    cache = Dict("ED" => [TimeStatusChange(:ON_ThermalStandard)]),
-                    ini_cond_chronology = Dict("UC" => Consecutive(), "ED" => Consecutive())
-                    )
+                                        intra_stage_chronologies = Dict(("UC"=>"ED") => Synchronize(from_steps = 24, to_executions = 1)),
+                                        horizons = Dict("UC" => 24, "ED" => 12),
+                                        intervals = Dict("UC" => Hour(24), "ED" => Hour(1)),
+                                        feed_forward = Dict(("ED", :devices, :Generators) => SemiContinuousFF(binary_from_stage = :ON, affected_variables = [:P])),
+                                        cache = Dict("ED" => [TimeStatusChange(:ON_ThermalStandard)]),
+                                        ini_cond_chronology = Dict("UC" => Consecutive(), "ED" => Consecutive())
+                                        )
 
         sim = Simulation(name = "steps",
-                    steps = 5, step_resolution =Hour(24),
-                    stages = stages_definition,
-                    stages_sequence = sequence,
-                    simulation_folder= file_path,
-                    verbose = true)
+                         steps = 5, step_resolution = Hour(24),
+                         stages = stages_definition,
+                         stages_sequence = sequence,
+                         simulation_folder= file_path,
+                         verbose = true)
                     
         @test_throws IS.ConflictingInputsError build!(sim)
     end

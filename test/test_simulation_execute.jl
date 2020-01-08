@@ -1,9 +1,6 @@
-IS.configure_logging(console_level = Logging.Info)
-if !isdir(joinpath(pwd(), "testing_reading_results"))
-    file_path = mkdir(joinpath(pwd(), "testing_reading_results"))
-else
-    file_path = joinpath(pwd(), "testing_reading_results")
-end
+#IS.configure_logging(console_level = Logging.Info)
+path = joinpath(pwd(), "test_simulation_execute")
+!isdir(path) && mkdir(path)
 
 function test_chronology(file_path::String)    
     ### Receding Horizon
@@ -172,6 +169,22 @@ function test_chronology(file_path::String)
             length = size(time_stamp,1)
             test = results.time_stamp[1,1]:resolution:results.time_stamp[length,1]
             @test time_stamp[!,:Range] == test
+        end
+    end
+
+    @testset "test write results for simulations" begin
+        for name in keys(sim.stages)
+            stage = sim.stages[name]
+            results = PSI.load_simulation_results(sim_results, name)
+            path_one = joinpath(file_path, "one")
+            !isdir(path_one) && mkdir(path_one)
+            PSI.write_to_CSV(results, path_one)
+            @test !isempty(joinpath(file_path, "one"))
+            # path_two = joinpath(file_path, "two")
+            # !isdir(path_two) && mkdir(path_two)
+            # PSI._write_psi_container(PSI.get_psi_container(stage), path_two)
+            # @test !isempty(path_two)
+
         end
     end
 end

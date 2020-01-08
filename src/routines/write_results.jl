@@ -57,14 +57,13 @@ function _write_data(psi_container::PSIContainer, save_path::AbstractString; kwa
     return
 end
 
-#### TODO write tests
+
 function _write_data(psi_container::PSIContainer, save_path::AbstractString, dual_con::Vector{Symbol}; kwargs...)
     file_type = get(kwargs, :file_type, Feather)
     if file_type == Feather || file_type == CSV
         duals = get_model_duals(psi_container, dual_con)
         for (k, v) in duals
             file_path = joinpath(save_path, "$(k)_dual.$(lowercase("$file_type"))")
-            #variable = _result_dataframe_variables(v)
             file_type.write(file_path, v)
         end
     end
@@ -89,7 +88,7 @@ function _export_model_result(stage::Stage, start_time::Dates.DateTime, save_pat
     compute_file_hash(save_path, files)
     return
 end
-#### TODO write tests
+
 function _export_model_result(stage::Stage, start_time::Dates.DateTime, save_path::String, dual_con::Vector{Symbol})
     _write_data(stage, save_path)
     _write_data(get_psi_container(stage), save_path, dual_con)

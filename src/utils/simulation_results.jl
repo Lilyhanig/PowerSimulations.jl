@@ -60,7 +60,7 @@ function load_simulation_results(SimulationResultsReference::SimulationResultsRe
             var = Feather.read("$file_path")
             variables[(variable[l])] = vcat(variables[(variable[l])],var[1:time_length,:])
             if l == 1
-                time_stamp = vcat(time_stamp, _reading_time(file_path, time_length))
+                time_stamp = vcat(time_stamp, _read_time(file_path, time_length))
                 check_file_integrity(dirname(file_path))
             end
         end
@@ -70,7 +70,7 @@ function load_simulation_results(SimulationResultsReference::SimulationResultsRe
     optimizer = read_json(joinpath(file_path, "optimizer_log.json"))
     obj_value = Dict{Symbol, Any}(:OBJECTIVE_FUNCTION => optimizer["obj_value"])
     if !isempty(dual)
-        duals = _reading_references(duals, dual, stage, step, references, time_length)
+        duals = _read_references(duals, dual, stage, step, references, time_length)
         results = DualResults(variables, obj_value, optimizer, time_stamp, duals)
     else
         results = SimulationResults(variables, obj_value, optimizer, time_stamp)
@@ -123,7 +123,7 @@ function load_simulation_results(SimulationResultsReference::SimulationResultsRe
             var = Feather.read(file_path)
             variables[(variable[l])] = vcat(variables[(variable[l])],var[1:time_length,:])
             if l == 1
-                time_stamp = vcat(time_stamp, _reading_time(file_path, time_length))
+                time_stamp = vcat(time_stamp, _read_time(file_path, time_length))
                 check_file_integrity(dirname(file_path))
             end
         end
@@ -133,7 +133,7 @@ function load_simulation_results(SimulationResultsReference::SimulationResultsRe
     optimizer = read_json(joinpath(file_path, "optimizer_log.json"))
     obj_value = Dict{Symbol, Any}(:OBJECTIVE_FUNCTION => optimizer["obj_value"])
     if !isempty(dual)
-        duals = _reading_references(duals, dual, stage, references, time_length)
+        duals = _read_references(duals, dual, stage, references, time_length)
         results = DualResults(variables, obj_value, optimizer, time_stamp, duals)
     else
         results = SimulationResults(variables, obj_value, optimizer, time_stamp)

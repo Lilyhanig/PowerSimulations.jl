@@ -1,5 +1,5 @@
 #IS.configure_logging(console_level = Logging.Info)
-path = (joinpath(pwd(), "test_reading_results"))
+path = (joinpath(pwd(), "test_read_results"))
 !isdir(path) && mkdir(path)
 
 

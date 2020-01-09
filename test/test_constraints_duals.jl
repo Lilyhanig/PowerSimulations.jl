@@ -1,4 +1,4 @@
-path = joinpath(pwd(), "test_dual_constraints")
+path = joinpath(pwd(), "test_constraints_duals")
 !isdir(path) && mkdir(path)
 import CSV
 
@@ -26,7 +26,7 @@ stages_definition = Dict("UC" => Stage(GenericOpProblem, template_uc, c_sys5_uc,
     @testset "testing dual constraints in results" begin
 
         duals = [:CopperPlateBalance]
-        sim_results = execute!(sim; dual_constraints = duals)
+        sim_results = execute!(sim; constraints_duals = duals)
         res = PSI.load_simulation_results(sim_results, "ED")
         dual = JuMP.dual(sim.stages["ED"].internal.psi_container.constraints[:CopperPlateBalance][1])
         @test dual == res.duals[:CopperPlateBalance_dual][1, 1]

@@ -42,7 +42,7 @@ references = make_references(sim, "2019-10-03T09-18-00-test")
 ```
 
 # Accepted Key Words
-- `dual_constraints::Vector{Symbol}`: name of dual constraints to be added to results
+- `constraints_duals::Vector{Symbol}`: name of dual constraints to be added to results
 """
 function make_references(sim::Simulation, date_run::String; kwargs...)
     sim.internal.date_ref[1] = sim.internal.date_range[1]
@@ -52,8 +52,8 @@ function make_references(sim::Simulation, date_run::String; kwargs...)
         variables = Dict{Symbol, Any}()
         interval = sim.sequence.intervals[stage_name]
         variable_names = (collect(keys(get_psi_container(sim.stages[stage_name]).variables)))
-        if :dual_constraints in keys(kwargs) && !isnothing(kwargs[:dual_constraints])
-            dual_cons = Symbol.(_concat_string(kwargs[:dual_constraints]))
+        if :constraints_duals in keys(kwargs) && !isnothing(kwargs[:constraints_duals])
+            dual_cons = Symbol.(_concat_string(kwargs[:constraints_duals]))
             variable_names = vcat(variable_names, dual_cons)
         end
         for name in variable_names

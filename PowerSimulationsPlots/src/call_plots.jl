@@ -78,6 +78,26 @@ PLOTLY_DEFAULT = vcat(
     CURTAILMENT_288,
 )
 
+function _filter_variables(results::PSI.Results; kwargs...)
+    filter_results = Dict()
+    reserves = get(kwargs, :reserves, false)
+    if reserves
+        for (key, var) in results.variables
+            if "$key"[1:2] == "P_" || "$key"[1:5] == "Spin_" || "$key"[1:4] == "Reg_" || "$key"[1:5] == "Flex_"
+                filter_results[key] = var
+            end
+        end
+    else
+        for (key, var) in results.variables
+            if "$key"[1:2] == "P_"
+                filter_results[key] = var
+            end
+        end
+    end
+    results = PSI._make_results(filter_results, results.total_cost, results.optimizer_log, results.time_stamp)
+    return results
+end
+
 function match_fuel_colors(
     stack::StackedGeneration,
     bar::BarGeneration,
@@ -174,6 +194,7 @@ fuel_plot(res, generator_dict)
 function fuel_plot(res::PSI.Results, generator_dict::Dict; kwargs...)
     set_display = get(kwargs, :display, true)
     save_fig = get(kwargs, :save, nothing)
+    res = _filter_variables(res; kwargs...)
     stack = get_stacked_aggregation_data(res, generator_dict)
     bar = get_bar_aggregation_data(res, generator_dict)
     backend = Plots.backend()
@@ -243,6 +264,7 @@ function bar_plot(res::PSI.Results; kwargs...)
     backend = Plots.backend()
     set_display = get(kwargs, :display, true)
     save_fig = get(kwargs, :save, nothing)
+    res = _filter_variables(res; kwargs...)
     bar_gen = get_bar_gen_data(res)
     if isnothing(backend)
         throw(IS.ConflictingInputsError("No backend detected. Type gr() to set a backend."))
@@ -326,6 +348,7 @@ function stack_plot(res::PSI.Results; kwargs...)
     set_display = get(kwargs, :set_display, true)
     backend = Plots.backend()
     save_fig = get(kwargs, :save, nothing)
+    res = _filter_variables(res; kwargs...)
     stacked_gen = get_stacked_generation_data(res)
     if isnothing(backend)
         throw(IS.ConflictingInputsError("No backend detected. Type gr() to set a backend."))
@@ -372,6 +395,33 @@ function _stack_plot_internal(
     for name in string.(keys(res.variables))
         variable_stack = get_stacked_plot_data(res, name)
         p = RecipesBase.plot(variable_stack, name; seriescolor = seriescolor)
+        set_display && display(p)
+        if !isnothing(save_fig)
+            Plots.savefig(p, joinpath(save_fig, "$(name)_Stack.png"))
+        end
+    end
+    p2 = RecipesBase.plot(stack; seriescolor = seriescolor)
+    set_display && display(p2)
+    if !isnothing(save_fig)
+        Plots.savefig(p2, joinpath(save_fig, "Stack_Generation.png"))
+    end
+end
+
+function _stack_plot_internal(
+    res1::PSI.Results,
+    res2::PSI.Results,
+    stack::StackedGeneration,
+    backend::Any,
+    save_fig::Any,
+    set_display::Bool;
+    kwargs...,
+)
+    seriescolor = get(kwargs, :seriescolor, GR_DEFAULT)
+    for name in string.(keys(res1.variables))
+        variable_stack1 = get_stacked_plot_data(res1, name)
+        variable_stack2 = get_stacked_plot_data(res1, name)
+        p1 = RecipesBase.plot(variable_stack, name; seriescolor = seriescolor)
+        p2 = 
         set_display && display(p)
         if !isnothing(save_fig)
             Plots.savefig(p, joinpath(save_fig, "$(name)_Stack.png"))

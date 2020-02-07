@@ -46,6 +46,42 @@ function plotly_stack_gen(stacked_gen::StackedGeneration, seriescolor::Array; kw
     end
 end
 
+function plotly_stack_gen(stacks::Array{StackedGeneration}, seriescolor::Array; kwargs...)
+    set_display = get(kwargs, :display, true)
+    save_fig = get(kwargs, :save, nothing)
+    traces = []
+    for stack in stacks
+        trace = PlotlyJS.GenericTrace{Dict{Symbol,Any}}[]
+        gens = stack.labels
+        seriescolor = set_seriescolor(seriescolor, gens)
+        for gen in 1:length(gens)
+            push!(
+                trace,
+                PlotlyJS.scatter(;
+                    name = gens[gen],
+                    x = stack.time_range,
+                    y = stack.data_matrix[:, gen],
+                    stackgroup = "one",
+                    mode = "lines",
+                    fill = "tonexty",
+                    line_color = seriescolor[gen],
+                    fillcolor = seriescolor[gen],
+                ),
+            )
+        end
+        traces = vcat(traces, trace)
+    end
+    p = PlotlyJS.plot(
+        traces,
+        PlotlyJS.Layout(title = "Variables", yaxis_title = "Generation (MW)"),
+    )
+    set_display && PlotlyJS.display(p)
+    if !isnothing(save_fig)
+        Plots.savefig(p, joinpath(save_fig, "Stack_Generation.png"))
+    end
+end
+
+
 function plotly_stack_plots(res::PSI.Results, seriescolor::Array; kwargs...)
     set_display = get(kwargs, :display, true)
     save_fig = get(kwargs, :save, nothing)

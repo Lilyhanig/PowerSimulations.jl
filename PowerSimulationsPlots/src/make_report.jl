@@ -123,7 +123,7 @@ and add additional markdowns to the report_design folder.
 function report(res::PSI.Results, system::PSY.System, out_path::String; kwargs...)
 
     doctype = get(kwargs, :doctype, "md2pdf")
-    backend = get(kwargs, :backend, gr())
+    backend = get(kwargs, :backend, Plots.gr())
     default_string = joinpath(pwd(), "src/report_design/report_design_fuel.jmd")
     jmd = get(kwargs, :jmd, default_string)
     args = Dict(

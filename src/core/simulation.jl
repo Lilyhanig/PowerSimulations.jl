@@ -1,21 +1,21 @@
 mutable struct SimulationInternal
-    raw_dir::Union{String,Nothing}
-    models_dir::Union{String,Nothing}
-    results_dir::Union{String,Nothing}
+    raw_dir::Union{String, Nothing}
+    models_dir::Union{String, Nothing}
+    results_dir::Union{String, Nothing}
     stages_count::Int64
-    run_count::Dict{Int64,Dict{Int64,Int64}}
-    date_ref::Dict{Int64,Dates.DateTime}
-    date_range::NTuple{2,Dates.DateTime} #Inital Time of the first forecast and Inital Time of the last forecast
+    run_count::Dict{Int64, Dict{Int64, Int64}}
+    date_ref::Dict{Int64, Dates.DateTime}
+    date_range::NTuple{2, Dates.DateTime} #Inital Time of the first forecast and Inital Time of the last forecast
     current_time::Dates.DateTime
     reset::Bool
     compiled_status::Bool
 end
 
 function SimulationInternal(steps::Int64, stages_keys::Base.KeySet)
-    count_dict = Dict{Int64,Dict{Int64,Int64}}()
+    count_dict = Dict{Int64, Dict{Int64, Int64}}()
 
     for s in 1:steps
-        count_dict[s] = Dict{Int64,Int64}()
+        count_dict[s] = Dict{Int64, Int64}()
         for st in stages_keys
             count_dict[s][st] = 0
         end
@@ -27,7 +27,7 @@ function SimulationInternal(steps::Int64, stages_keys::Base.KeySet)
         nothing,
         length(stages_keys),
         count_dict,
-        Dict{Int64,Dates.DateTime}(),
+        Dict{Int64, Dates.DateTime}(),
         (Dates.now(), Dates.now()),
         Dates.now(),
         true,
@@ -47,28 +47,21 @@ end
 """ # TODO: Add DocString
 mutable struct Simulation
     steps::Int64
-    stages::Dict{String,Stage{<:AbstractOperationsProblem}}
-    sequence::Union{Nothing,SimulationSequence}
+    stages::Dict{String, Stage{<:AbstractOperationsProblem}}
+    sequence::Union{Nothing, SimulationSequence}
     simulation_folder::String
     name::String
-    internal::Union{Nothing,SimulationInternal}
+    internal::Union{Nothing, SimulationInternal}
 
     function Simulation(;
         name::String,
         steps::Int64,
-        stages = Dict{String,Stage{AbstractOperationsProblem}}(),
+        stages = Dict{String, Stage{AbstractOperationsProblem}}(),
         stages_sequence = nothing,
         simulation_folder::String,
         kwargs...,
     )
-        new(
-            steps,
-            stages,
-            stages_sequence,
-            simulation_folder,
-            name,
-            nothing,
-        )
+        new(steps, stages, stages_sequence, simulation_folder, name, nothing)
     end
 end
 
@@ -157,7 +150,7 @@ function _get_simulation_initial_times!(sim::Simulation)
     k_size = length(k)
     @assert k_size == maximum(k)
 
-    stage_initial_times = Dict{Int64,Vector{Dates.DateTime}}()
+    stage_initial_times = Dict{Int64, Vector{Dates.DateTime}}()
     time_range = Vector{Dates.DateTime}(undef, 2)
 
     for (stage_number, stage_name) in sim.sequence.order
@@ -218,7 +211,7 @@ end
 
 function _check_steps(
     sim::Simulation,
-    stage_initial_times::Dict{Int64,Vector{Dates.DateTime}},
+    stage_initial_times::Dict{Int64, Vector{Dates.DateTime}},
 )
     for (stage_number, stage_name) in sim.sequence.order
         forecast_count = length(stage_initial_times[stage_number])
@@ -234,7 +227,7 @@ end
 function _populate_caches!(sim::Simulation, stage_name::String)
     caches = get(sim.sequence.cache, stage_name, nothing)
     isnothing(caches) && return
-    cache_dict = Dict{Type{<:AbstractCache},AbstractCache}()
+    cache_dict = Dict{Type{<:AbstractCache}, AbstractCache}()
     for c in caches
         sim.stages[stage_name].internal.cache_dict[typeof(c)] = c
         build_cache!(c, sim.stages[stage_name].internal.psi_container)

@@ -6,15 +6,15 @@
 Calculates how many times a stage is executed for every interval of the previous stage
 """
 function _calculate_interval_inner_counts(
-    order::Dict{Int64,String},
-    intervals::Dict{String,<:Dates.TimePeriod},
+    order::Dict{Int64, String},
+    intervals::Dict{String, <:Dates.TimePeriod},
     step_resolution::Dates.TimePeriod,
 )
     reverse_order = sort(collect(keys(order)), rev = true)
-    interval_run_counts = Dict{Int64,Int64}()
-    for k in reverse_order[1:end-1]
+    interval_run_counts = Dict{Int64, Int64}()
+    for k in reverse_order[1:(end - 1)]
         stage_name = order[k]
-        previous_stage_name = order[k-1]
+        previous_stage_name = order[k - 1]
         stage_interval = intervals[stage_name]
         previous_stage_interval = intervals[previous_stage_name]
         interval_run_counts[k] = previous_stage_interval / stage_interval
@@ -27,7 +27,7 @@ function _calculate_interval_inner_counts(
 end
 
 """ Function calculates the total number of stage executions in the simulation and allocates the appropiate vector"""
-function _allocate_execution_order(interval_run_counts::Dict{Int64,Int64})
+function _allocate_execution_order(interval_run_counts::Dict{Int64, Int64})
     total_size_of_vector = 0
     for k in sort(collect(keys(interval_run_counts)))
         mult = 1
@@ -41,13 +41,13 @@ end
 
 function _fill_execution_order(
     execution_order::Vector{Int64},
-    interval_run_counts::Dict{Int64,Int64},
+    interval_run_counts::Dict{Int64, Int64},
 )
     function _fill_stage(
         execution_order::Vector{Int64},
         index::Int64,
         stage::Int64,
-        interval_run_counts::Dict{Int64,Int64},
+        interval_run_counts::Dict{Int64, Int64},
         last_stage::Int64,
     )
         if stage < last_stage
@@ -73,19 +73,20 @@ function _fill_execution_order(
 end
 
 function _get_execution_order_vector(
-    order::Dict{Int64,String},
-    intervals::Dict{String,<:Dates.TimePeriod},
+    order::Dict{Int64, String},
+    intervals::Dict{String, <:Dates.TimePeriod},
     step_resolution::Dates.TimePeriod,
 )
     length(order) == 1 && return [1]
-    interval_run_counts = _calculate_interval_inner_counts(order, intervals, step_resolution)
+    interval_run_counts =
+        _calculate_interval_inner_counts(order, intervals, step_resolution)
     execution_order_vector = _allocate_execution_order(interval_run_counts)
     _fill_execution_order(execution_order_vector, interval_run_counts)
     @assert isempty(findall(x -> x == -1, execution_order_vector))
     return execution_order_vector
 end
 
-function _check_stage_order(order::Dict{Int64,String})
+function _check_stage_order(order::Dict{Int64, String})
     sorted_keys = sort(collect(keys(order)))
     not_sorted = (sorted_keys[1] != 1)
     for element in diff(sorted_keys)
@@ -99,18 +100,25 @@ function _check_stage_order(order::Dict{Int64,String})
     return
 end
 
-function _check_feedforward(feedforward::Dict{Tuple{String,Symbol,Symbol},<:AbstractAffectFeedForward}, feedforward_chronologies::Dict{Pair{String,String},<:FeedForwardChronology})
+function _check_feedforward(
+    feedforward::Dict{Tuple{String, Symbol, Symbol}, <:AbstractAffectFeedForward},
+    feedforward_chronologies::Dict{Pair{String, String}, <:FeedForwardChronology},
+)
     for stage_key in keys(feedforward)
         @debug stage_key
-        invalid = isempty((k for k in keys(feedforward_chronologies) if k.second == stage_key[1]))
-        invalid && throw(ArgumentError("No valid Chronology has been defined for the feedforward added to $(stage_key[1])"))
+        invalid =
+            isempty((k for k in keys(feedforward_chronologies) if k.second == stage_key[1]))
+        invalid &&
+        throw(ArgumentError("No valid Chronology has been defined for the feedforward added to $(stage_key[1])"))
     end
     return
 end
 
-function _check_chronology_consistency(order::Dict{Int64,String},
-                                        feedforward_chronologies::Dict{Pair{String,String},<:FeedForwardChronology},
-                                        ini_cond_chronology::IniCondChronology)
+function _check_chronology_consistency(
+    order::Dict{Int64, String},
+    feedforward_chronologies::Dict{Pair{String, String}, <:FeedForwardChronology},
+    ini_cond_chronology::IniCondChronology,
+)
 
     if isempty(feedforward_chronologies)
         @warn("No Feedforward Chronologies have been defined. This configuration assummes that there is no information passing between stages")
@@ -136,25 +144,25 @@ end
                         )
 """ # TODO: Add DocString
 mutable struct SimulationSequence
-    horizons::Dict{String,Int64}
+    horizons::Dict{String, Int64}
     step_resolution::Dates.TimePeriod
-    intervals::Dict{String,<:Dates.TimePeriod}
-    order::Dict{Int64,String}
-    feedforward_chronologies::Dict{Pair{String,String},<:FeedForwardChronology}
-    feedforward::Dict{Tuple{String,Symbol,Symbol},<:AbstractAffectFeedForward}
+    intervals::Dict{String, <:Dates.TimePeriod}
+    order::Dict{Int64, String}
+    feedforward_chronologies::Dict{Pair{String, String}, <:FeedForwardChronology}
+    feedforward::Dict{Tuple{String, Symbol, Symbol}, <:AbstractAffectFeedForward}
     ini_cond_chronology::IniCondChronology
-    cache::Dict{String,Vector{<:AbstractCache}}
+    cache::Dict{String, Vector{<:AbstractCache}}
     execution_order::Vector{Int64}
 
     function SimulationSequence(;
-        horizons::Dict{String,Int64},
+        horizons::Dict{String, Int64},
         step_resolution::Dates.TimePeriod,
-        intervals::Dict{String,<:Dates.TimePeriod},
-        order::Dict{Int64,String},
-        feedforward_chronologies = Dict{Pair{String,String},FeedForwardChronology}(),
-        feedforward = Dict{Tuple{String,Symbol,Symbol},AbstractAffectFeedForward}(),
+        intervals::Dict{String, <:Dates.TimePeriod},
+        order::Dict{Int64, String},
+        feedforward_chronologies = Dict{Pair{String, String}, FeedForwardChronology}(),
+        feedforward = Dict{Tuple{String, Symbol, Symbol}, AbstractAffectFeedForward}(),
         ini_cond_chronology = InterStage(),
-        cache = Dict{String,Vector{AbstractCache}}(),
+        cache = Dict{String, Vector{AbstractCache}}(),
     )
         _check_stage_order(order)
         _check_feedforward(feedforward, feedforward_chronologies)
@@ -173,7 +181,7 @@ mutable struct SimulationSequence
             feedforward,
             ini_cond_chronology,
             cache,
-            _get_execution_order_vector(order, intervals, step_resolution)
+            _get_execution_order_vector(order, intervals, step_resolution),
         )
 
     end

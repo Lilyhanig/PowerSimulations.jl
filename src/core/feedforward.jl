@@ -23,7 +23,7 @@ struct RecedingHorizon <: FeedForwardChronology
     end
 end
 
-struct Consecutive <:FeedForwardChronology end
+struct Consecutive <: FeedForwardChronology end
 
 function check_chronology(sim::Simulation, key::NTuple{2, String}, sync::Synchronize)
     from_stage = get_stage(sim, key.first)
@@ -63,15 +63,14 @@ function check_chronology(sim::Simulation, key::NTuple{2, String}, ::Consecutive
     return
 end
 
-check_chronology(sim::Simulation, key::NTuple{2, String}, ::RecedingHorizon) =
-    nothing
+check_chronology(sim::Simulation, key::NTuple{2, String}, ::RecedingHorizon) = nothing
 
 function check_chronology(
     ::T,
     stages::Pair,
     horizons::Pair,
     intervals::Pair,
-) where {T<:FeedForwardChronology}
+) where {T <: FeedForwardChronology}
     error("Chronology $(T) not implemented")
     return
 end
@@ -81,7 +80,7 @@ end
 struct UpperBoundFF <: AbstractAffectFeedForward
     variable_from_stage::Symbol
     affected_variables::Vector{Symbol}
-    cache::Union{Nothing,Type{<:AbstractCache}}
+    cache::Union{Nothing, Type{<:AbstractCache}}
 end
 
 function UpperBoundFF(; variable_from_stage, affected_variables)
@@ -94,7 +93,7 @@ struct RangeFF <: AbstractAffectFeedForward
     variable_from_stage_ub::Symbol
     variable_from_stage_lb::Symbol
     affected_variables::Vector{Symbol}
-    cache::Union{Nothing,Type{<:AbstractCache}}
+    cache::Union{Nothing, Type{<:AbstractCache}}
 end
 
 function RangeFF(; variable_from_stage_ub, variable_from_stage_lb, affected_variables)
@@ -111,7 +110,7 @@ get_bounds_from_stage(p::RangeFF) = (p.variable_from_stage_lb, p.variable_from_s
 struct SemiContinuousFF <: AbstractAffectFeedForward
     binary_from_stage::Symbol
     affected_variables::Vector{Symbol}
-    cache::Union{Nothing,Type{<:AbstractCache}}
+    cache::Union{Nothing, Type{<:AbstractCache}}
 end
 
 function SemiContinuousFF(; binary_from_stage, affected_variables)
@@ -124,7 +123,7 @@ get_affected_variables(p::AbstractAffectFeedForward) = p.affected_variables
 struct IntegralLimitFF <: AbstractAffectFeedForward
     variable_from_stage::Symbol
     affected_variables::Vector{Symbol}
-    cache::Union{Nothing,Type{<:AbstractCache}}
+    cache::Union{Nothing, Type{<:AbstractCache}}
 end
 
 function IntegralLimitFF(; variable_from_stage, affected_variables)
@@ -217,7 +216,7 @@ where r in range_data.
 function range_ff(
     psi_container::PSIContainer,
     cons_name::Symbol,
-    param_reference::NTuple{2,UpdateRef},
+    param_reference::NTuple{2, UpdateRef},
     var_name::Symbol,
 )
     time_steps = model_time_steps(psi_container)
@@ -391,7 +390,7 @@ function feedforward!(
     psi_container::PSIContainer,
     device_type::Type{T},
     ff_model::Nothing,
-) where {T<:PSY.Component}
+) where {T <: PSY.Component}
     return
 end
 
@@ -399,7 +398,7 @@ function feedforward!(
     psi_container::PSIContainer,
     device_type::Type{I},
     ff_model::UpperBoundFF,
-) where {I<:PSY.StaticInjection}
+) where {I <: PSY.StaticInjection}
     for prefix in get_affected_variables(ff_model)
         var_name = variable_name(prefix, I)
         parameter_ref = UpdateRef{JuMP.VariableRef}(var_name)
@@ -411,7 +410,7 @@ function feedforward!(
     psi_container::PSIContainer,
     ::Type{T},
     ff_model::SemiContinuousFF,
-) where {T<:PSY.StaticInjection}
+) where {T <: PSY.StaticInjection}
     bin_var = variable_name(get_binary_from_stage(ff_model), T)
     parameter_ref = UpdateRef{JuMP.VariableRef}(bin_var)
     for prefix in get_affected_variables(ff_model)
@@ -429,7 +428,7 @@ function feedforward!(
     psi_container::PSIContainer,
     ::Type{T},
     ff_model::IntegralLimitFF,
-) where {T<:PSY.StaticInjection}
+) where {T <: PSY.StaticInjection}
     for prefix in get_affected_variables(ff_model)
         var_name = variable_name(prefix, T)
         parameter_ref = UpdateRef{JuMP.VariableRef}(var_name)
@@ -446,10 +445,10 @@ end
 # This makes the choice in which variable to get from the results.
 function get_stage_variable(
     ::Type{RecedingHorizon},
-    stages::Pair{Stage{T},Stage{T}},
+    stages::Pair{Stage{T}, Stage{T}},
     device_name::AbstractString,
     var_ref::UpdateRef,
-) where {T<:AbstractOperationsProblem}
+) where {T <: AbstractOperationsProblem}
     variable = get_variable(stages.first.internal.psi_container, var_ref.access_ref)
     step = axes(variable)[2][1]
     return JuMP.value(variable[device_name, step])
@@ -457,10 +456,10 @@ end
 
 function get_stage_variable(
     ::Type{Consecutive},
-    stages::Pair{Stage{T},Stage{T}},
+    stages::Pair{Stage{T}, Stage{T}},
     device_name::String,
     var_ref::UpdateRef,
-) where {T<:AbstractOperationsProblem}
+) where {T <: AbstractOperationsProblem}
     variable = get_variable(stages.first.internal.psi_container, var_ref.access_ref)
     step = axes(variable)[2][end]
     return JuMP.value(variable[device_name, step])
@@ -468,10 +467,10 @@ end
 
 function get_stage_variable(
     ::Type{Synchronize},
-    stages::Pair{Stage{T},Stage{T}},
+    stages::Pair{Stage{T}, Stage{T}},
     device_name::String,
     var_ref::UpdateRef,
-) where {T<:AbstractOperationsProblem}
+) where {T <: AbstractOperationsProblem}
     variable = get_variable(stages.first.internal.psi_container, var_ref.access_ref)
     step = axes(variable)[2][stages.second.internal.execution_count + 1]
     return JuMP.value(variable[device_name, step])
@@ -483,7 +482,7 @@ function feedforward_update(
     param_array::JuMPParamArray,
     to_stage::Stage,
     from_stage::Stage,
-) where {T<:FeedForwardChronology}
+) where {T <: FeedForwardChronology}
     for device_name in axes(param_array)[1]
         var_value =
             get_stage_variable(T, (from_stage => to_stage), device_name, param_reference)

@@ -310,6 +310,7 @@ function Base.show(io::IO, sequence::SimulationSequence)
     to = []
     from = String("")
     for (k, v) in sequence.feedforward
+        println(io, "$(k[1]): $(typeof(v)) -> $(k[3])\n")
         to = String.(v.affected_variables)
         if isa(v, SemiContinuousFF)
             from = String.(v.binary_from_stage)
@@ -318,8 +319,8 @@ function Base.show(io::IO, sequence::SimulationSequence)
         else
             from = String.(v.variable_from_stage)
         end
+        _print_feedforward(io, sequence.feedforward_chronologies, to, from)
     end
-    _print_feedforward(io, sequence.feedforward_chronologies, to, from)
     println(io, "Initial Condition Chronology")
     println(io, "----------------------------\n")
     if sequence.ini_cond_chronology == IntraStage()

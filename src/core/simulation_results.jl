@@ -17,7 +17,12 @@ function SimulationResultsReference(sim::Simulation; kwargs...)
         chronologies["stage-$stage_name"] = convert(Int, (interval / resolution))
         base_powers[stage_name] = Int(sim.stages[stage_name].sys.basepower)
     end
-    return SimulationResultsReference(ref, sim.internal.results_dir, chronologies, base_powers)
+    return SimulationResultsReference(
+        ref,
+        sim.internal.results_dir,
+        chronologies,
+        base_powers,
+    )
 end
 
 """
@@ -128,7 +133,10 @@ end
 
 function deserialize_sim_output(file_path::String)
     path = joinpath(file_path, "output_references")
-    list = setdiff(collect(readdir(path)), ["results_folder.json", "chronologies.json", "base_power.json"])
+    list = setdiff(
+        collect(readdir(path)),
+        ["results_folder.json", "chronologies.json", "base_power.json"],
+    )
     ref = Dict()
     for stage in list
         ref[stage] = Dict{Symbol, Any}()
@@ -223,11 +231,24 @@ function load_simulation_results(
     obj_value = Dict{Symbol, Any}(:OBJECTIVE_FUNCTION => optimizer["obj_value"])
     if !isempty(dual)
         duals = _read_references(duals, dual, stage, step, references, time_length)
-        results =
-            DualResults(variables, obj_value, optimizer, time_stamp, duals, results_folder, base_power)
+        results = DualResults(
+            variables,
+            obj_value,
+            optimizer,
+            time_stamp,
+            duals,
+            results_folder,
+            base_power,
+        )
     else
-        results =
-            SimulationResults(variables, obj_value, optimizer, time_stamp, results_folder, base_power)
+        results = SimulationResults(
+            variables,
+            obj_value,
+            optimizer,
+            time_stamp,
+            results_folder,
+            base_power,
+        )
     end
     return results
 end
@@ -306,11 +327,24 @@ function load_simulation_results(
     obj_value = Dict{Symbol, Any}(:OBJECTIVE_FUNCTION => optimizer["obj_value"])
     if !isempty(dual)
         duals = _read_references(duals, dual, stage, references, time_length)
-        results =
-            DualResults(variables, obj_value, optimizer, time_stamp, duals, results_folder, base_power)
+        results = DualResults(
+            variables,
+            obj_value,
+            optimizer,
+            time_stamp,
+            duals,
+            results_folder,
+            base_power,
+        )
     else
-        results =
-            SimulationResults(variables, obj_value, optimizer, time_stamp, results_folder, base_power)
+        results = SimulationResults(
+            variables,
+            obj_value,
+            optimizer,
+            time_stamp,
+            results_folder,
+            base_power,
+        )
     end
     return results
 end
@@ -405,10 +439,7 @@ function serialize_sim_output(sim_results::SimulationResultsReference)
         joinpath(file_path, "chronologies.json"),
         JSON.json(sim_results.chronologies),
     )
-    JSON.write(
-        joinpath(file_path, "base_power.json"),
-        JSON.json(sim_results.base_power),
-    )
+    JSON.write(joinpath(file_path, "base_power.json"), JSON.json(sim_results.base_power))
 end
 
 # writes the results to CSV files in a folder path, but they can't be read back

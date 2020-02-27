@@ -524,11 +524,22 @@ function solve_op_problem!(op_problem::OperationsProblem; kwargs...)
     merge!(optimizer_log, timed_log)
     if :constraints_duals in keys(kwargs)
         dual_result = get_model_duals(op_problem.psi_container, kwargs[:constraints_duals])
-        results =
-            _make_results(vars_result, obj_value, optimizer_log, time_stamp, dual_result, basepower)
+        results = _make_results(
+            vars_result,
+            obj_value,
+            optimizer_log,
+            time_stamp,
+            dual_result,
+            basepower,
+        )
     else
-        results =
-            OperationsProblemResults(vars_result, obj_value, optimizer_log, time_stamp, basepower)
+        results = OperationsProblemResults(
+            vars_result,
+            obj_value,
+            optimizer_log,
+            time_stamp,
+            basepower,
+        )
     end
     !isnothing(save_path) && write_results(results, save_path)
 

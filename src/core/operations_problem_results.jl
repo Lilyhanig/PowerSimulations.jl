@@ -15,7 +15,13 @@ function _make_results(
     time_stamp::DataFrames.DataFrame,
     base_power::Int,
 )
-    return OperationsProblemResults(variables, total_cost, optimizer_log, time_stamp, base_power)
+    return OperationsProblemResults(
+        variables,
+        total_cost,
+        optimizer_log,
+        time_stamp,
+        base_power,
+    )
 end
 """This function creates the correct results struct for the context"""
 function _make_results(
@@ -26,7 +32,13 @@ function _make_results(
     base_power::Int,
 )
     time_stamp = DataFrames.DataFrame(Range = time_stamp)
-    return OperationsProblemResults(variables, total_cost, optimizer_log, time_stamp, base_power)
+    return OperationsProblemResults(
+        variables,
+        total_cost,
+        optimizer_log,
+        time_stamp,
+        base_power,
+    )
 end
 """This function creates the correct results struct for the context"""
 function _make_results(

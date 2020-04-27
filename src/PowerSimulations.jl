@@ -23,12 +23,15 @@ export ServiceModel
 export RangeReserve
 ######## Branch Models ########
 export StaticLine
-export StaticTransformer
-export TapControl
+export StaticLineBounds
 export StaticLineUnbounded
-#export PhaseControl
+export StaticTransformer
+export StaticTransformerBounds
+export StaticTransformerUnbounded
+export FlowMonitoredLine
 export HVDCLossless
 export HVDCDispatch
+export HVDCUnbounded
 #export VoltageSourceDC
 ######## Load Models ########
 export StaticPowerLoad
@@ -84,8 +87,8 @@ export StoredEnergy
 
 #operation_models
 export GenericOpProblem
-#export UnitCommitment
-#export EconomicDispatch
+export UnitCommitmentProblem
+export EconomicDispatchProblem
 #export OptimalPowerFlow
 
 # Functions
@@ -118,12 +121,11 @@ export get_duals
 
 ## Utils Exports
 export SimulationResultsReference
-#export get_sim_resolution
-export write_op_problem
 export write_results
 export check_file_integrity
 export load_operation_results
 export load_simulation_results
+export load_results
 export write_to_CSV
 export get_all_constraint_index
 export get_all_var_index
@@ -147,7 +149,13 @@ import PowerSystems
 import InfrastructureSystems
 # so that users have access to IS.Results interfaces
 import InfrastructureSystems:
-    get_variables, get_total_cost, get_optimizer_log, get_time_stamp, write_results
+    get_base_power,
+    get_variables,
+    get_total_cost,
+    get_optimizer_log,
+    get_time_stamp,
+    write_results
+export get_base_power
 export get_variables
 export get_dual_values
 export get_total_cost
@@ -186,8 +194,13 @@ include("network_models/networks.jl")
 
 include("core/parameters.jl")
 include("core/cache.jl")
-include("core/psi_container.jl")
+include("core/initial_condition_types.jl")
+include("core/initial_condition.jl")
 include("core/initial_conditions.jl")
+include("core/update_initial_conditions.jl")
+include("core/operations_problem_template.jl")
+include("core/psi_settings.jl")
+include("core/psi_container.jl")
 include("core/operations_problem_results.jl")
 include("core/operations_problem.jl")
 include("core/simulation_stages.jl")
@@ -214,6 +227,7 @@ include("services_models/services_constructor.jl")
 include("network_models/copperplate_model.jl")
 include("network_models/powermodels_interface.jl")
 include("network_models/ptdf_model.jl")
+include("network_models/network_slack_variables.jl")
 
 #Device constructors
 include("devices_models/device_constructors/common/constructor_validations.jl")

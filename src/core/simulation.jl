@@ -285,7 +285,7 @@ function _get_simulation_initial_times!(sim::Simulation)
 
     if isnothing(get_initial_time(sim))
         sim.initial_time = stage_initial_times[1][1]
-        @debug("Initial Simulation will be infered from the data.
+        @debug("Initial Simulation Time will be infered from the data.
                Initial Simulation Time set to $(sim.initial_time)")
     end
 
@@ -327,7 +327,7 @@ end
 function _check_required_ini_cond_caches(sim::Simulation)
     for (stage_number, stage_name) in sim.sequence.order
         stage = get_stage(sim, stage_name)
-        for (k, v) in get_initial_conditions(stage.internal.psi_container)
+        for (k, v) in iterate_initial_conditions(stage.internal.psi_container)
             # No cache needed for the initial condition -> continue
             isnothing(v[1].cache_type) && continue
             c = get_cache(sim, v[1].cache_type, k.device_type)
@@ -430,11 +430,11 @@ end
 function initial_condition_update!(
     stage::Stage,
     ini_cond_key::ICKey,
+    initial_conditions::Vector{InitialCondition},
     chronology::IntraStageChronology,
     sim::Simulation,
 )
-    ini_cond_vector = get_initial_conditions(stage.internal.psi_container)[ini_cond_key]
-    for ic in get_initial_conditions(stage.internal.psi_container)[ini_cond_key]
+    for ic in initial_conditions
         name = device_name(ic)
         interval_chronology =
             get_stage_interval_chronology(sim.sequence, get_stage_name(sim, stage))
@@ -448,19 +448,18 @@ function initial_condition_update!(
         quantity = calculate_ic_quantity(ini_cond_key, ic, var_value, cache)
         PJ.fix(ic.value, quantity)
     end
-    return
 end
 
 """ Updates the initial conditions of the stage"""
 function initial_condition_update!(
     stage::Stage,
     ini_cond_key::ICKey,
+    initial_conditions::Vector{InitialCondition},
     chronology::InterStageChronology,
     sim::Simulation,
 )
     execution_index = get_execution_order(sim)
-    ini_cond_vector = get_initial_conditions(stage.internal.psi_container)[ini_cond_key]
-    for ic in ini_cond_vector
+    for ic in initial_conditions
         name = device_name(ic)
         current_ix = get_current_execution_index(sim)
         source_stage_ix = current_ix == 1 ? length(execution_index) : current_ix - 1
@@ -501,22 +500,32 @@ function update_cache!(
     stage::Stage,
 ) where {D <: PSY.Device}
     c = get_cache(sim, key)
+    increment = get_increment(sim, stage, c)
     variable = get_variable(stage.internal.psi_container, c.ref)
     for t in 1:get_end_of_interval_step(stage), name in variable.axes[1]
         device_status = JuMP.value(variable[name, t])
         @debug name, device_status
         if c.value[name][:status] == device_status
-            c.value[name][:count] += 1.0
+            c.value[name][:count] += increment
             @debug("Cache value TimeStatus for device $name set to $device_status and count to $(c.value[name][:count])")
         else
             c.value[name][:status] != device_status
-            c.value[name][:count] = 1.0
+            c.value[name][:count] = increment
             c.value[name][:status] = device_status
             @debug("Cache value TimeStatus for device $name set to $device_status and count to 1.0")
         end
     end
 
     return
+end
+
+function get_increment(sim::Simulation, stage::Stage, cache::TimeStatusChange)
+    units = cache.units
+    stage_name = get_stage_name(sim, stage)
+    stage_interval = IS.time_period_conversion(get_stage_interval(sim, stage_name))
+    horizon = get_stage_horizon(sim.sequence, stage_name)
+    stage_resolution = stage_interval / horizon
+    return float(stage_resolution / units)
 end
 
 function update_cache!(
@@ -583,8 +592,8 @@ end
 
 function _update_initial_conditions!(stage::Stage, sim::Simulation)
     ini_cond_chronology = sim.sequence.ini_cond_chronology
-    for (k, v) in get_initial_conditions(stage.internal.psi_container)
-        initial_condition_update!(stage, k, ini_cond_chronology, sim)
+    for (k, v) in iterate_initial_conditions(stage.internal.psi_container)
+        initial_condition_update!(stage, k, v, ini_cond_chronology, sim)
     end
     return
 end
@@ -744,7 +753,7 @@ function serialize(simulation::Simulation; path = ".", force = false)
     try
         for (key, stage) in simulation.stages
             if isnothing(stage.internal)
-                throw(ArgumentError("stage $(stage.number) has not been built"))
+                throw(ArgumentError("stage $(stage.internal.number) has not been built"))
             end
             sys_filename = "system-$(IS.get_uuid(stage.sys)).json"
             # Skip serialization if multiple stages have the same system.

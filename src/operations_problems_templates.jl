@@ -34,7 +34,7 @@ function _generic_template(; kwargs...)
         kwargs,
         :services,
         Dict(
-            :ReserveUp =>     ServiceModel(PSY.VariableReserve{PSY.ReserveUp}, RangeReserve),
+            :ReserveUp => ServiceModel(PSY.VariableReserve{PSY.ReserveUp}, RangeReserve),
             :ReserveDown =>
                 ServiceModel(PSY.VariableReserve{PSY.ReserveDown}, RangeReserve),
         ),
@@ -126,7 +126,7 @@ ed_problem = EconomicDispatchProblem(system)
 
 function EconomicDispatchProblem(system::PSY.System; kwargs...)
     template = template_economic_dispatch(; kwargs...)
-    op_problem = OperationsProblem(EconomicDispatchProblem, template, system; kwargs...)
+    op_problem = OperationsProblem(EconomicDispatchProblem, template, system)
     return op_problem
 end
 
@@ -150,7 +150,7 @@ uc_problem = UnitCommitmentProblem(system)
 
 function UnitCommitmentProblem(system::PSY.System; kwargs...)
     template = template_unit_commitment(; kwargs...)
-    op_problem = OperationsProblem(UnitCommitmentProblem, template, system; kwargs...)
+    op_problem = OperationsProblem(UnitCommitmentProblem, template, system)
     return op_problem
 end
 
@@ -175,7 +175,8 @@ results = run_unit_commitment(system; optimizer = optimizer)
 
 function run_unit_commitment(sys::PSY.System; kwargs...)
     op_problem = UnitCommitmentProblem(sys; kwargs...)
-    results = solve!(op_problem; kwargs...)
+    optimizer = get(kwargs, :optimizer, nothing)
+    results = solve!(op_problem; optimizer = optimizer)
     return results
 end
 
@@ -200,6 +201,7 @@ results = run_economic_dispatch(system; optimizer = optimizer)
 
 function run_economic_dispatch(sys::PSY.System; kwargs...)
     op_problem = EconomicDispatchProblem(sys; kwargs...)
-    results = solve!(op_problem; kwargs...)
+    optimizer = get(kwargs, :optimizer, nothing)
+    results = solve!(op_problem; optimizer = optimizer)
     return results
 end

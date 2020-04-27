@@ -1,21 +1,32 @@
 # # Getting Started with Power Graphics
 
-# This is the plotting package for SIIP.
+# This uses the plotting package for SIIP [PowerGraphics](http://github.com/nrel-siip/PowerGraphics.jl.git))
 
-# Start by creating a results object using the [PowerSimulations package](http://github.com/nrel/PowerSimulations.jl.git)
+# Start by creating a results object using [PowerSimulations](http://github.com/nrel-siip/PowerSimulations.jl.git)
 
 # Set up Power Graphics:
+# ```julia
+# import PowerGraphics
+# using Plots
+# using PlotlyJS
+# const PG = PowerGraphics
+# ```
 
-import PowerGraphics
-using Plots
-using PlotlyJS
-const PG = PowerGraphics
-include("../../src/fake_data.jl")
-# To make a simple GR() backend plot (static plot), simply call
+# ## To make a simple GR() backend plot (static plot), simply call
 
-PG.stack_plot(results)
+# ```julia
+# stack_plot(results)
+# ```
 
-# To make an interactive PlotlyJS plot, reset the backend
+# ![this one](plots-1/P__PowerSystems.ThermalStandard_Stack.png)
+# ![this one](plots-1/Example_GR_Plot.png)
 
-plotlyjs()
-PG.stack_plot(results)
+# ## To make an interactive PlotlyJS plot, reset the backend
+
+# ```julia
+# Plots.plotlyjs()
+
+# stack_plot(results)
+# ```
+# ![this one](plots-2/P__PowerSystems.ThermalStandard_Stack.png)
+# ![this one](plots-2/Example_PlotlyJS_Plot.png)

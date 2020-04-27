@@ -8,6 +8,7 @@ struct OperationsProblemResults <: IS.Results
     parameter_values::Dict{Symbol, DataFrames.DataFrame}
 end
 
+IS.get_base_power(result::OperationsProblemResults) = result.base_power
 IS.get_variables(result::OperationsProblemResults) = result.variable_values
 IS.get_total_cost(result::OperationsProblemResults) = result.total_cost
 IS.get_optimizer_log(results::OperationsProblemResults) = results.optimizer_log
@@ -62,11 +63,12 @@ function load_operation_results(folder_path::AbstractString)
     dual_result = Dict{Symbol, Any}()
     dual_names = _find_duals(variable_list)
     param_names = _find_params(variable_list)
-    variable_list = setdiff(variable_list, vcat(dual_names, param_names))
+    variable_list = setdiff(variable_list, vcat(dual_names, param_names, ".DS_Store"))
     param_values = Dict{Symbol, DataFrames.DataFrame}()
     for name in variable_list
         variable_name = splitext(name)[1]
         file_path = joinpath(folder_path, name)
+        @show file_path
         vars_result[Symbol(variable_name)] = Feather.read(file_path)
     end
     for name in dual_names
@@ -112,14 +114,10 @@ Exports Operational Problem Results to a path
 # Accepted Key Words
 - `file_type = CSV`: only CSV and featherfile are accepted
 """
-function IS.write_results(results::OperationsProblemResults, save_path::String; kwargs...)
-    if !isdir(save_path)
+function IS.write_results(results::IS.Results, folder_path::String; kwargs...)
+    if !isdir(folder_path)
         throw(IS.ConflictingInputsError("Specified path is not valid. Run write_results to save results."))
     end
-    folder_path = mkdir(joinpath(
-        save_path,
-        replace_chars("$(round(Dates.now(), Dates.Minute))", ":", "-"),
-    ))
     write_data(get_variables(results), folder_path; kwargs...)
     if !isempty(get_duals(results))
         write_data(get_duals(results), folder_path; duals = true, kwargs...)
@@ -127,7 +125,6 @@ function IS.write_results(results::OperationsProblemResults, save_path::String; 
     if !isempty(results.parameter_values)
         write_data(results.parameter_values, folder_path; params = true, kwargs...)
     end
-    #write_data(results.parameter_values, folder_path; params = true, kwargs...)
     write_data(results.base_power, folder_path)
     write_optimizer_log(results.optimizer_log, folder_path)
     write_data(results.time_stamp, folder_path, "time_stamp"; kwargs...)

@@ -1,21 +1,35 @@
-using PowerGraphics
-using Plots
-using PlotlyJS
-const PG = PowerGraphics
-include("../../src/fake_data.jl")
 # # How to plot multiple results in subplots for comparisons
 
-# See [How to set up plots](set_up_plots.md) to get started
+# See [How to set up plots](3.0_set_up_plots.md) to get started
 
 # ### Run the simulation and get various results
 
-results_one = results
-results_two = results
-
 # ### Plot the results as an array
 
-PG.stack_plot([results_one, results_two])
+# ```julia
+# stack_plot([results_one, results_two])
+# ```
 
-# or
+# ![this one](plots-19/P__PowerSystems.ThermalStandard_Stack.png)
+# ![this one](plots-19/P__PowerSystems.RenewableDispatch_Stack.png)
+# ![this one](plots-19/Comparison.png)
 
-PG.fuel_plot([results_one, results_two], generators)
+# ### Plot by Fuel Type
+
+# ```julia
+# fuel_plot([results_one, results_two], c_sys5_re)
+# ```
+
+# ![this one](plots-20/Comparison_Stack.png)
+# ![this one](plots-20/Comparison_Bar.png)
+
+# ## Multiple results can be compared while also plotting fewer variables
+
+# ```julia
+# variables = [Symbol("P__PowerSystems.RenewableDispatch")]
+# stack_plot([results_one, results_two], variables)
+# ```
+
+# ![this one](plots-21/P__PowerSystems.ThermalStandard_Stack.png)
+# ![this one](plots-21/P__PowerSystems.RenewableDispatch_Stack.png)
+# ![this one](plots-21/Comparison_with_fewer_variables.png)

@@ -30,27 +30,31 @@ const JuMPConstraintArray = JuMP.Containers.DenseAxisArray{JuMP.ConstraintRef}
 const JuMPParamArray = JuMP.Containers.DenseAxisArray{PJ.ParameterRef}
 const DenseAxisArrayContainer = Dict{Symbol, JuMP.Containers.DenseAxisArray}
 
+# Settings constants
+const UNSET_HORIZON = 0
+const UNSET_INI_TIME = Dates.DateTime(0)
+
 # Tolerance of comparisons
 const ABSOLUTE_TOLERANCE = 1.0e-10
+const SLACK_COST = 1e6
 
 const MISSING_INITIAL_CONDITIONS_TIME_COUNT = 999.0
 
 const OPERATIONS_ACCEPTED_KWARGS = [
     :horizon,
-    :initial_conditions,
     :initial_time,
     :use_forecast_data,
     :PTDF,
     :use_parameters,
     :optimizer,
-    #:use_warm_start, # Not implemented yet
+    :warm_start,
+    :slack_variables,
     :constraint_duals,
 ]
 
 const OPERATIONS_SOLVE_KWARGS = [:optimizer, :save_path]
 
-const STAGE_ACCEPTED_KWARGS =
-    [:initial_conditions, :PTDF, :use_warm_start, :constraint_duals]
+const STAGE_ACCEPTED_KWARGS = [:PTDF, :warm_start, :slack_variables, :constraint_duals]
 
 const PSI_NAME_DELIMITER = "__"
 
@@ -74,6 +78,8 @@ const THETA = "theta"
 const VM = "Vm"
 const INFLOW = "In"
 const SPILLAGE = "Sp"
+const SLACK_UP = "γ⁺"
+const SLACK_DN = "γ⁻"
 
 # Constraints
 const ACTIVE = "active"

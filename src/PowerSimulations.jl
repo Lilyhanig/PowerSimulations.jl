@@ -18,6 +18,7 @@ export CopperPlatePowerModel
 
 ######## Device Models ########
 export DeviceModel
+export FixedOutput
 ######## Service Models ########
 export ServiceModel
 export RangeReserve
@@ -38,11 +39,9 @@ export StaticPowerLoad
 export InterruptiblePowerLoad
 export DispatchablePowerLoad
 ######## Renewable Formulations ########
-export RenewableFixed
 export RenewableFullDispatch
 export RenewableConstantPowerFactor
 ######## Hydro Formulations ########
-export HydroFixed
 export HydroDispatchRunOfRiver
 export HydroDispatchReservoirFlow
 export HydroDispatchReservoirStorage
@@ -130,8 +129,13 @@ export write_to_CSV
 export get_all_constraint_index
 export get_all_var_index
 export get_con_index
+export get_results_variable
 export get_var_index
+export get_result_variable
 export configure_logging
+export show_recorder_events
+export list_simulation_events
+export show_simulation_events
 
 #################################################################################
 # Imports
@@ -208,6 +212,7 @@ include("core/simulation_sequence.jl")
 include("core/simulation.jl")
 include("core/feedforward.jl")
 include("core/simulation_results.jl")
+include("core/recorder_events.jl")
 
 #Device Modeling components
 include("devices_models/devices/common.jl")

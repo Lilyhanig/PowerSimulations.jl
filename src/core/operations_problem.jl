@@ -1,4 +1,4 @@
-struct GenericOpProblem <: AbstractOperationsProblem end
+struct GenericOpProblem <: PowerSimulationsOperationsProblem end
 
 mutable struct OperationsProblem{M <: AbstractOperationsProblem}
     template::OperationsProblemTemplate
@@ -202,10 +202,11 @@ end
 
 get_transmission_ref(op_problem::OperationsProblem) = op_problem.template.transmission
 get_devices_ref(op_problem::OperationsProblem) = op_problem.template.devices
+get_branches_ref(op_problem::OperationsProblem) = op_problem.template.branches
+get_services_ref(op_problem::OperationsProblem) = op_problem.template.services
 get_system(op_problem::OperationsProblem) = op_problem.sys
 get_psi_container(op_problem::OperationsProblem) = op_problem.psi_container
 get_base_power(op_problem::OperationsProblem) = op_problem.sys.basepower
-
 function reset!(op_problem::OperationsProblem)
     op_problem.psi_container =
         PSIContainer(op_problem.sys, op_problem.psi_container.settings, nothing)
@@ -297,6 +298,33 @@ function set_services_model!(
     return
 end
 
+function set_model!(
+    ::Type{D},
+    op_problem::OperationsProblem,
+    name::Symbol,
+    device_model::DeviceModel,
+) where {D <: PSY.Branch}
+    op_problem.template.branches[name] = device_model
+end
+
+function set_model!(
+    ::Type{D},
+    op_problem::OperationsProblem,
+    name::Symbol,
+    device_model::DeviceModel,
+) where {D <: PSY.StaticInjection}
+    op_problem.template.devices[name] = device_model
+end
+
+function set_model!(
+    ::Type{D},
+    op_problem::OperationsProblem,
+    name::Symbol,
+    device_model::DeviceModel,
+) where {D <: PSY.Service}
+    op_problem.template.services[name] = device_model
+end
+
 function construct_device!(
     op_problem::OperationsProblem,
     name::Symbol,
@@ -305,8 +333,8 @@ function construct_device!(
     if haskey(op_problem.template.devices, name)
         throw(IS.ConflictingInputsError("Device with model name $(name) already exists in the Opertaion Model"))
     end
-    devices_ref = get_devices_ref(op_problem)
-    devices_ref[name] = device_model
+    set_model!(device_model.device_type, op_problem, name, device_model)
+
     construct_device!(
         op_problem.psi_container,
         get_system(op_problem),
@@ -499,9 +527,9 @@ end
 
 # Function to create a dictionary for the time series of the simulation
 function get_time_stamps(op_problem::OperationsProblem)
-    initial_time = PSY.get_forecasts_initial_time(op_problem.sys)
+    initial_time = model_initial_time(get_psi_container(op_problem))
     interval = PSY.get_forecasts_resolution(op_problem.sys)
-    horizon = PSY.get_forecasts_horizon(op_problem.sys)
+    horizon = get_horizon(get_settings(get_psi_container(op_problem)))
     range_time = collect(initial_time:interval:(initial_time + interval .* horizon))
     time_stamp = DataFrames.DataFrame(Range = range_time[:, 1])
 
@@ -514,7 +542,11 @@ function write_data(psi_container::PSIContainer, save_path::AbstractString; kwar
         for (k, v) in get_variables(psi_container)
             file_path = joinpath(save_path, "$(k).$(lowercase("$file_type"))")
             variable = axis_array_to_dataframe(v)
-            file_type.write(file_path, variable)
+            if isempty(variable)
+                @debug "$(k) is empty, not writing $file_path"
+            else
+                file_type.write(file_path, variable)
+            end
         end
     end
     return

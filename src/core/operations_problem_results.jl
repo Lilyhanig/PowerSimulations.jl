@@ -14,6 +14,7 @@ IS.get_total_cost(result::OperationsProblemResults) = result.total_cost
 IS.get_optimizer_log(results::OperationsProblemResults) = results.optimizer_log
 IS.get_time_stamp(result::OperationsProblemResults) = result.time_stamp
 get_duals(result::OperationsProblemResults) = result.dual_values
+IS.get_parameters(result::OperationsProblemResults) = result.parameter_values
 
 function get_variable(res_model::OperationsProblemResults, key::Symbol)
     var_result = get(res_model.variable_values, key, nothing)
@@ -83,6 +84,7 @@ function load_operation_results(folder_path::AbstractString)
     end
     optimizer_log = read_json(joinpath(folder_path, "optimizer_log.json"))
     time_stamp = Feather.read(joinpath(folder_path, "time_stamp.feather"))
+    time_stamp = convert.(Dates.DateTime, time_stamp)
     base_power = JSON.read(joinpath(folder_path, "base_power.json"))[1]
     if size(time_stamp, 1) > find_var_length(vars_result, variable_list)
         time_stamp = shorten_time_stamp(time_stamp)
@@ -122,12 +124,12 @@ function IS.write_results(results::IS.Results, folder_path::String; kwargs...)
     if !isempty(get_duals(results))
         write_data(get_duals(results), folder_path; duals = true, kwargs...)
     end
-    if !isempty(results.parameter_values)
-        write_data(results.parameter_values, folder_path; params = true, kwargs...)
+    if !isempty(IS.get_parameters(results))
+        write_data(IS.get_parameters(results), folder_path; params = true, kwargs...)
     end
-    write_data(results.base_power, folder_path)
+    write_data(IS.get_base_power(results), folder_path)
     write_optimizer_log(results.optimizer_log, folder_path)
-    write_data(results.time_stamp, folder_path, "time_stamp"; kwargs...)
+    write_data(IS.get_time_stamp(results), folder_path, "time_stamp"; kwargs...)
     files = collect(readdir(folder_path))
     compute_file_hash(folder_path, files)
     @info("Files written to $folder_path folder.")
@@ -135,8 +137,53 @@ function IS.write_results(results::IS.Results, folder_path::String; kwargs...)
 end
 
 # writes the results to CSV files in a folder path, but they can't be read back
-function write_to_CSV(results::OperationsProblemResults, folder_path::String)
-    write_results(results, folder_path; file_type = CSV)
+function write_to_CSV(results::OperationsProblemResults, save_path::String; kwargs...)
+    if !isdir(save_path)
+        throw(IS.ConflictingInputsError("Specified path is not valid. Run write_results to save results."))
+    end
+    folder_path = mkdir(joinpath(
+        save_path,
+        replace_chars("$(round(Dates.now(), Dates.Minute))", ":", "-"),
+    ))
+    for (k, v) in IS.get_variables(results)
+        if decode_symbol(k)[1] == "P"
+            IS.get_variables(results)[k] = IS.get_base_power(results) .* v
+        end
+    end
+    write_data(get_variables(results), folder_path; file_type = CSV, kwargs...)
+    if !isempty(get_duals(results))
+        write_data(
+            get_duals(results),
+            folder_path;
+            duals = true,
+            file_type = CSV,
+            kwargs...,
+        )
+    end
+    if !isempty(IS.get_parameters(results))
+        for (p, v) in IS.get_parameters(results)
+            IS.get_parameters(results)[p] = IS.get_base_power(results) .* v
+        end
+        write_data(
+            IS.get_parameters(results),
+            folder_path;
+            params = true,
+            file_type = CSV,
+            kwargs...,
+        )
+    end
+    write_optimizer_log(results.optimizer_log, folder_path)
+    write_data(
+        IS.get_time_stamp(results),
+        folder_path,
+        "time_stamp";
+        file_type = CSV,
+        kwargs...,
+    )
+    files = collect(readdir(folder_path))
+    compute_file_hash(folder_path, files)
+    @info("Files written to $folder_path folder.")
+    return
 end
 
 function _find_params(variables::Array)

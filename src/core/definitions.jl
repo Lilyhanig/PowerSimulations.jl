@@ -35,9 +35,10 @@ const UNSET_HORIZON = 0
 const UNSET_INI_TIME = Dates.DateTime(0)
 
 # Tolerance of comparisons
-const ABSOLUTE_TOLERANCE = 1.0e-10
+# MIP gap tolerances in most solvers are set to 1e-4
+const ABSOLUTE_TOLERANCE = 1.0e-6
 const SLACK_COST = 1e6
-
+const COST_EPSILON = 1e-3
 const MISSING_INITIAL_CONDITIONS_TIME_COUNT = 999.0
 
 const OPERATIONS_ACCEPTED_KWARGS = [
@@ -49,12 +50,14 @@ const OPERATIONS_ACCEPTED_KWARGS = [
     :optimizer,
     :warm_start,
     :slack_variables,
+    :system_to_file,
     :constraint_duals,
 ]
 
 const OPERATIONS_SOLVE_KWARGS = [:optimizer, :save_path]
 
-const STAGE_ACCEPTED_KWARGS = [:PTDF, :warm_start, :slack_variables, :constraint_duals]
+const STAGE_ACCEPTED_KWARGS =
+    [:PTDF, :warm_start, :slack_variables, :constraint_duals, :system_to_file]
 
 const PSI_NAME_DELIMITER = "__"
 

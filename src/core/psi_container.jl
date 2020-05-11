@@ -163,7 +163,7 @@ function psi_container_init!(
     end
 
     if get_use_forecast_data(settings)
-        total_number_of_devices = length(PSY.get_components(PSY.Device, sys))
+        total_number_of_devices = length(get_available_components(PSY.Device, sys))
         psi_container.time_steps = 1:get_horizon(settings)
         # The 10e6 limit is based on the sizes of the lp benchmark problems http://plato.asu.edu/ftp/lpcom.html The maximum numbers of constraints and variables in the benchmark provlems is 1,918,399 and 1,259,121, respectively. See also https://prod-ng.sandia.gov/techlib-noauth/access-control.cgi/2013/138847.pdf
         variable_count_estimate = length(psi_container.time_steps) * total_number_of_devices
@@ -215,6 +215,16 @@ function encode_symbol(::Type{T}, name1::AbstractString, name2::AbstractString) 
     return Symbol(join((name1, name2, T), PSI_NAME_DELIMITER))
 end
 
+function encode_symbol(
+    ::Type{T},
+    name1::AbstractString,
+    name2::AbstractString,
+) where {T <: PSY.Reserve}
+    T_ = replace(string(T), "{" => "_")
+    T_ = replace(T_, "}" => "")
+    return Symbol(join((name1, name2, T_), PSI_NAME_DELIMITER))
+end
+
 function encode_symbol(::Type{T}, name1::Symbol, name2::Symbol) where {T}
     return encode_symbol(T, string(name1), string(name2))
 end
@@ -223,8 +233,14 @@ function encode_symbol(::Type{T}, name::AbstractString) where {T}
     return Symbol(join((name, T), PSI_NAME_DELIMITER))
 end
 
+function encode_symbol(::Type{T}, name::AbstractString) where {T <: PSY.Reserve}
+    T_ = replace(string(T), "{" => "_")
+    T_ = replace(T_, "}" => "")
+    return Symbol(join((name, T_), PSI_NAME_DELIMITER))
+end
+
 function encode_symbol(::Type{T}, name::Symbol) where {T}
-    return Symbol(join((string(name), T), PSI_NAME_DELIMITER))
+    return encode_symbol(T, string(name))
 end
 
 function encode_symbol(name::AbstractString)

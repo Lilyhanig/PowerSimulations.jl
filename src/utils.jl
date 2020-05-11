@@ -63,7 +63,11 @@ function write_data(vars_results::Dict, save_path::String; kwargs...)
     if file_type == Feather || file_type == CSV
         for (k, v) in vars_results
             file_path = joinpath(save_path, "$name$k.$(lowercase("$file_type"))")
-            file_type.write(file_path, vars_results[k])
+            if isempty(vars_results[k])
+                @debug "$name$k is empty, not writing $file_path"
+            else
+                file_type.write(file_path, vars_results[k])
+            end
         end
     end
 end
@@ -266,4 +270,8 @@ end
 "Removes the string `char` from the original string"
 function remove_chars(s::String, char::String)
     return replace_chars(s::String, char::String, "")
+end
+
+function get_available_components(::Type{T}, sys::PSY.System) where {T <: PSY.Component}
+    return PSY.get_components(T, sys, x -> PSY.get_available(x))
 end

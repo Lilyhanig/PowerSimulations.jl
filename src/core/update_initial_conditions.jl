@@ -30,6 +30,7 @@ function calculate_ic_quantity(
     current_counter = time_cache[:count]
     last_status = time_cache[:status]
     var_status = isapprox(var_value, 0.0, atol = ABSOLUTE_TOLERANCE) ? 0.0 : 1.0
+    @debug last_status, var_status, abs(last_status - var_status)
     @assert abs(last_status - var_status) < ABSOLUTE_TOLERANCE
 
     return last_status >= 1.0 ? 0.0 : current_counter
@@ -55,7 +56,7 @@ function calculate_ic_quantity(
     status_change_to_off =
         get_condition(ic) >= ABSOLUTE_TOLERANCE && var_value <= ABSOLUTE_TOLERANCE
     if status_change_to_on
-        return ic.device.tech.activepowerlimits.min
+        return ic.device.activepowerlimits.min
     end
 
     if status_change_to_off
@@ -95,7 +96,7 @@ function status_init(
         devices,
         ICKey(DeviceStatus, T),
         _make_initial_condition_active_power,
-        _get_active_power_status_value,
+        _get_status_value,
     )
 
     return
@@ -126,7 +127,7 @@ function duration_init(
             devices,
             key,
             _make_initial_condition_active_power,
-            _get_active_power_duration_value,
+            _get_duration_value,
             TimeStatusChange,
         )
     end
@@ -162,7 +163,7 @@ function status_init(
         devices,
         ICKey(DeviceStatus, T),
         _make_initial_condition_active_power,
-        _get_active_power_status_value,
+        _get_status_value,
         # Doesn't require Cache
     )
 end
@@ -193,7 +194,7 @@ function duration_init(
             devices,
             key,
             _make_initial_condition_active_power,
-            _get_active_power_duration_value,
+            _get_duration_value,
             TimeStatusChange,
         )
     end
@@ -233,7 +234,16 @@ function _make_initial_conditions!(
         ini_conds = Vector{InitialCondition}(undef, length_devices)
         set_initial_conditions!(container, key, ini_conds)
         for (ix, dev) in enumerate(devices)
-            ini_conds[ix] = make_ic_func(container, dev, get_val_func(dev, key), cache)
+            val = get_val_func(dev, key)
+            ic = make_ic_func(container, dev, val, cache)
+            ini_conds[ix] = ic
+            IS.@record :simulation InitialConditionUpdateEvent(
+                Dates.DateTime(1970, 1, 1),
+                key,
+                ic,
+                val,
+                0,
+            )
         end
     else
         ini_conds = get_initial_conditions(container, key)
@@ -241,7 +251,16 @@ function _make_initial_conditions!(
         for dev in devices
             IS.get_uuid(dev) in ic_devices && continue
             @debug "Setting $(key.ic_type) initial conditions for the status device $(PSY.get_name(dev)) based on system data"
-            push!(ini_conds, make_ic_func(container, dev, get_val_func(dev, key), cache))
+            val = get_val_func(dev, key)
+            ic = make_ic_func(container, dev, val, cache)
+            push!(ini_conds, ic)
+            IS.@record :simulation InitialConditionUpdateEvent(
+                Dates.DateTime(1970, 1, 1),
+                key,
+                ic,
+                val,
+                0,
+            )
         end
     end
 
@@ -276,8 +295,8 @@ function _make_initial_condition_reservoir_energy(
     return InitialCondition(device, _get_ref_reservoir_energy(T, container), value, cache)
 end
 
-function _get_active_power_status_value(device, key)
-    return PSY.get_activepower(device) > 0 ? 1.0 : 0.0
+function _get_status_value(device, key)
+    return PSY.get_status(device) ? 1.0 : 0.0
 end
 
 function _get_active_power_output_value(device, key)
@@ -292,12 +311,12 @@ function _get_reservoir_energy_value(device, key)
     return PSY.get_initial_storage(device)
 end
 
-function _get_active_power_duration_value(dev, key)
+function _get_duration_value(dev, key)
     if key.ic_type == TimeDurationON
-        value = PSY.get_activepower(dev) > 0 ? MISSING_INITIAL_CONDITIONS_TIME_COUNT : 0.0
+        value = PSY.get_status(dev) > 0 ? PSY.get_time_at_status(dev) : 0.0
     else
         @assert key.ic_type == TimeDurationOFF
-        value = PSY.get_activepower(dev) <= 0 ? MISSING_INITIAL_CONDITIONS_TIME_COUNT : 0.0
+        value = PSY.get_status(dev) <= 0 ? PSY.get_time_at_status(dev) : 0.0
     end
 
     return value

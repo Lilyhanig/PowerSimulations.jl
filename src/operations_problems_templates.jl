@@ -1,6 +1,5 @@
-struct EconomicDispatchProblem <: AbstractOperationsProblem end
-
-struct UnitCommitmentProblem <: AbstractOperationsProblem end
+struct EconomicDispatchProblem <: PowerSimulationsOperationsProblem end
+struct UnitCommitmentProblem <: PowerSimulationsOperationsProblem end
 
 function _generic_template(; kwargs...)
     network = get(kwargs, :network, CopperPlatePowerModel)
@@ -11,9 +10,9 @@ function _generic_template(; kwargs...)
         Dict(
             :Generators => DeviceModel(PSY.ThermalStandard, ThermalBasicUnitCommitment),
             :RE => DeviceModel(PSY.RenewableDispatch, RenewableFullDispatch),
-            :DistRE => DeviceModel(PSY.RenewableFix, RenewableFixed),
+            :DistRE => DeviceModel(PSY.RenewableFix, FixedOutput),
             :Hydro => DeviceModel(PSY.HydroEnergyReservoir, HydroDispatchReservoirFlow),
-            :HydroROR => DeviceModel(PSY.HydroDispatch, HydroFixed),
+            :HydroROR => DeviceModel(PSY.HydroDispatch, FixedOutput),
             :Loads => DeviceModel(PSY.PowerLoad, StaticPowerLoad),
             :ILoads => DeviceModel(PSY.InterruptibleLoad, InterruptiblePowerLoad),
         ),
@@ -34,7 +33,8 @@ function _generic_template(; kwargs...)
         kwargs,
         :services,
         Dict(
-            :ReserveUp => ServiceModel(PSY.VariableReserve{PSY.ReserveUp}, RangeReserve),
+            :ReserveUp =>
+                ServiceModel(PSY.VariableReserve{PSY.ReserveUp}, RangeReserve),
             :ReserveDown =>
                 ServiceModel(PSY.VariableReserve{PSY.ReserveDown}, RangeReserve),
         ),
@@ -84,16 +84,15 @@ template = template_economic_dispatch()
 - `services::Dict{Symbol, ServiceModel}` : override default `ServiceModel` settings
 """
 function template_economic_dispatch(; kwargs...)
-
     devices = get(
         kwargs,
         :devices,
         Dict(
             :Generators => DeviceModel(PSY.ThermalStandard, ThermalRampLimited),
             :RE => DeviceModel(PSY.RenewableDispatch, RenewableFullDispatch),
-            :DistRE => DeviceModel(PSY.RenewableFix, RenewableFixed),
+            :DistRE => DeviceModel(PSY.RenewableFix, FixedOutput),
             :Hydro => DeviceModel(PSY.HydroEnergyReservoir, HydroDispatchReservoirFlow),
-            :HydroROR => DeviceModel(PSY.HydroDispatch, HydroFixed),
+            :HydroROR => DeviceModel(PSY.HydroDispatch, FixedOutput),
             :Loads => DeviceModel(PSY.PowerLoad, StaticPowerLoad),
             :ILoads => DeviceModel(PSY.InterruptibleLoad, InterruptiblePowerLoad),
         ),
@@ -122,11 +121,18 @@ ed_problem = EconomicDispatchProblem(system)
 - `devices::Dict{Symbol, DeviceModel}` : override default `DeviceModel` settings
 - `branches::Dict{Symbol, DeviceModel}` : override default `DeviceModel` settings
 - `services::Dict{Symbol, ServiceModel}` : override default `ServiceModel` settings
+- Key word arguments supported by `OperationsProblem`
 """
 
 function EconomicDispatchProblem(system::PSY.System; kwargs...)
-    template = template_economic_dispatch(; kwargs...)
-    op_problem = OperationsProblem(EconomicDispatchProblem, template, system)
+    kwargs = Dict(kwargs)
+    template_kwargs = Dict()
+    for kw in setdiff(keys(kwargs), OPERATIONS_ACCEPTED_KWARGS)
+        template_kwargs[kw] = pop!(kwargs, kw)
+    end
+
+    template = template_economic_dispatch(; template_kwargs...)
+    op_problem = OperationsProblem(EconomicDispatchProblem, template, system; kwargs...)
     return op_problem
 end
 
@@ -146,11 +152,18 @@ uc_problem = UnitCommitmentProblem(system)
 - `devices::Dict{Symbol, DeviceModel}` : override default `DeviceModel` settings
 - `branches::Dict{Symbol, DeviceModel}` : override default `DeviceModel` settings
 - `services::Dict{Symbol, ServiceModel}` : override default `ServiceModel` settings
+- Key word arguments supported by `OperationsProblem`
 """
 
 function UnitCommitmentProblem(system::PSY.System; kwargs...)
-    template = template_unit_commitment(; kwargs...)
-    op_problem = OperationsProblem(UnitCommitmentProblem, template, system)
+    kwargs = Dict(kwargs)
+    template_kwargs = Dict()
+    for kw in setdiff(keys(kwargs), OPERATIONS_ACCEPTED_KWARGS)
+        template_kwargs[kw] = pop!(kwargs, kw)
+    end
+
+    template = template_unit_commitment(; template_kwargs...)
+    op_problem = OperationsProblem(UnitCommitmentProblem, template, system; kwargs...)
     return op_problem
 end
 
@@ -171,12 +184,17 @@ results = run_unit_commitment(system; optimizer = optimizer)
 - `branches::Dict{Symbol, DeviceModel}` : override default `DeviceModel` settings
 - `services::Dict{Symbol, ServiceModel}` : override default `ServiceModel` settings
 - `optimizer::JuMP Optimizer` : An optimizer is a required key word
+- `savepath::AbstractString`  : Path to save results
+- Key word arguments supported by `OperationsProblem`
 """
 
 function run_unit_commitment(sys::PSY.System; kwargs...)
+    solve_kwargs = Dict()
+    for kw in OPERATIONS_SOLVE_KWARGS
+        haskey(kwargs, kw) && (solve_kwargs[kw] = kwargs[kw])
+    end
     op_problem = UnitCommitmentProblem(sys; kwargs...)
-    optimizer = get(kwargs, :optimizer, nothing)
-    results = solve!(op_problem; optimizer = optimizer)
+    results = solve!(op_problem; solve_kwargs...)
     return results
 end
 
@@ -197,11 +215,16 @@ results = run_economic_dispatch(system; optimizer = optimizer)
 - `branches::Dict{Symbol, DeviceModel}` : override default `DeviceModel` settings
 - `services::Dict{Symbol, ServiceModel}` : override default `ServiceModel` settings
 - `optimizer::JuMP optimizer` : a JuMP optimizer is a required key word
+- `savepath::AbstractString`  : Path to save results
+- Key word arguments supported by `OperationsProblem`
 """
 
 function run_economic_dispatch(sys::PSY.System; kwargs...)
+    solve_kwargs = Dict()
+    for kw in OPERATIONS_SOLVE_KWARGS
+        haskey(kwargs, kw) && (solve_kwargs[kw] = kwargs[kw])
+    end
     op_problem = EconomicDispatchProblem(sys; kwargs...)
-    optimizer = get(kwargs, :optimizer, nothing)
-    results = solve!(op_problem; optimizer = optimizer)
+    results = solve!(op_problem; solve_kwargs...)
     return results
 end

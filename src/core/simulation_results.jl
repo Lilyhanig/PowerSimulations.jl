@@ -72,57 +72,66 @@ function make_references(sim::Simulation, date_run::String)
     references = Dict()
     for (stage_number, stage_name) in sim.sequence.order
         stage = sim.stages[stage_name]
-        stage_container = get_psi_container(stage)
-        variables = Dict{Symbol, Any}()
-        interval = get_stage_interval(sim, stage_name)
-        variable_names = (collect(keys(stage_container.variables)))
-        if !is_milp(get_psi_container(sim.stages[stage_name]))
-            constraint_duals = get_constraint_duals(stage_container.settings)
-            constraint_duals_names = Symbol.(_concat_dual(constraint_duals))
-            variable_names = vcat(variable_names, constraint_duals_names)
-        end
-        params =
-            collect(keys(get_parameters_value(get_psi_container(sim.stages[stage_name]))))
-        param_keys = Symbol.(_concat_param(params))
-        variable_names = vcat(variable_names, param_keys)
-        for name in variable_names
-            variables[name] = DataFrames.DataFrame(
-                Date = Dates.DateTime[],
-                Step = String[],
-                File_Path = String[],
-            )
-        end
-        for s in 1:(sim.steps)
-            stage = get_stage(sim, stage_name)
-            for run in 1:(stage.internal.executions)
-                sim.internal.current_time = sim.internal.date_ref[stage_number]
-                for name in variable_names
-                    full_path = joinpath(
-                        sim.internal.raw_dir,
-                        "step-$(s)-stage-$(stage_name)",
-                        replace_chars("$(sim.internal.current_time)", ":", "-"),
-                        "$(name).feather",
-                    )
-                    if isfile(full_path)
-                        date_df = DataFrames.DataFrame(
-                            Date = sim.internal.current_time,
-                            Step = "step-$(s)",
-                            File_Path = full_path,
-                        )
-                        variables[name] = vcat(variables[name], date_df)
-                    else
-                        @error "$full_path, does not contain any simulation result raw data"
-                    end
-                end
-                sim.internal.run_count[s][stage_number] += 1
-                sim.internal.date_ref[stage_number] =
-                    sim.internal.date_ref[stage_number] + interval
-            end
-        end
-        references["stage-$stage_name"] = variables
+        references["stage-$stage_name"] = make_result_reference(stage, sim)
     end
     return references
 end
+
+function make_result_reference(
+    stage::Stage{T},
+    sim::Simulation,
+) where {T <: PowerSimulationsOperationsProblem}
+    stage_number = get_number(stage)
+    stage_name = get_stage_name(sim, stage)
+    stage_container = get_psi_container(stage)
+    variables = Dict{Symbol, Any}()
+    interval = get_stage_interval(sim, stage_name)
+    variable_names = (collect(keys(stage_container.variables)))
+    if !is_milp(get_psi_container(stage))
+        constraint_duals = get_constraint_duals(stage_container.settings)
+        constraint_duals_names = Symbol.(_concat_dual(constraint_duals))
+        variable_names = vcat(variable_names, constraint_duals_names)
+    end
+    params = collect(keys(get_parameters_value(get_psi_container(stage))))
+    param_keys = Symbol.(_concat_param(params))
+    variable_names = vcat(variable_names, param_keys)
+    for name in variable_names
+        variables[name] = DataFrames.DataFrame(
+            Date = Dates.DateTime[],
+            Step = String[],
+            File_Path = String[],
+        )
+    end
+    for s in 1:(sim.steps)
+        for run in 1:(stage.internal.executions)
+            sim.internal.current_time = sim.internal.date_ref[stage_number]
+            for name in variable_names
+                full_path = joinpath(
+                    sim.internal.raw_dir,
+                    "step-$(s)-stage-$(stage_name)",
+                    replace_chars("$(sim.internal.current_time)", ":", "-"),
+                    "$(name).feather",
+                )
+                if isfile(full_path)
+                    date_df = DataFrames.DataFrame(
+                        Date = sim.internal.current_time,
+                        Step = "step-$(s)",
+                        File_Path = full_path,
+                    )
+                    variables[name] = vcat(variables[name], date_df)
+                else
+                    @error "$full_path, does not contain any simulation result raw data"
+                end
+            end
+            sim.internal.run_count[s][stage_number] += 1
+            sim.internal.date_ref[stage_number] =
+                sim.internal.date_ref[stage_number] + interval
+        end
+    end
+    return variables
+end
+
+make_result_reference(stage::Stage{T}, sim::Simulation) where {T} = nothing
 
 struct SimulationResults <: IS.Results
     base_power::Float64
@@ -141,6 +150,7 @@ IS.get_total_cost(result::SimulationResults) = result.total_cost
 IS.get_optimizer_log(results::SimulationResults) = results.optimizer_log
 IS.get_time_stamp(result::SimulationResults) = result.time_stamp
 get_duals(result::SimulationResults) = result.dual_values
+IS.get_parameters(result::SimulationResults) = result.parameter_values
 
 function deserialize_sim_output(file_path::String)
     path = joinpath(file_path, "output_references")
@@ -208,7 +218,8 @@ function _read_references(
         for (ix, time) in enumerate(date_df.Date)
             file_path = date_df[ix, :File_Path]
             var = Feather.read(file_path)
-            results[name] = vcat(results[name], var[1:time_length, :])
+            var_length = min(time_length, size(var, 1))
+            results[name] = vcat(results[name], var[1:var_length, :])
         end
     end
     return results
@@ -218,6 +229,7 @@ function _read_time(file_path::String, time_length::Number)
     time_file_path = joinpath(dirname(file_path), "time_stamp.feather")
     temp_time_stamp = Feather.read("$time_file_path")
     time_stamp = temp_time_stamp[(1:time_length), :]
+    time_stamp = convert.(Dates.DateTime, time_stamp)
     return time_stamp
 end
 
@@ -485,11 +497,15 @@ end
 function serialize_sim_output(sim_results::SimulationResultsReference)
     file_path = mkdir(joinpath(dirname(sim_results.results_folder), "output_references"))
     for (k, stage) in sim_results.ref
-        for (i, v) in stage
-            path = joinpath(file_path, "$k")
-            !isdir(path) && mkdir(path)
-            # TODO: Remove this line. There shouldn't be empties coming here.
-            !isempty(v) && Feather.write(joinpath(path, "$i.feather"), v)
+        try
+            for (i, v) in stage
+                path = joinpath(file_path, "$k")
+                !isdir(path) && mkdir(path)
+                # TODO: Remove this line. There shouldn't be empties coming here.
+                !isempty(v) && Feather.write(joinpath(path, "$i.feather"), v)
+            end
+        catch
+            @warn("Results Reference not compatible with serialization")
         end
     end
     JSON.write(
@@ -504,8 +520,66 @@ function serialize_sim_output(sim_results::SimulationResultsReference)
 end
 
 # writes the results to CSV files in a folder path, but they can't be read back
-function write_to_CSV(results::SimulationResults)
-    write_results(results; file_type = CSV)
+function write_to_CSV(res::SimulationResults; kwargs...)
+    folder_path = res.results_folder
+    if !isdir(folder_path)
+        throw(IS.ConflictingInputsError("Specified path is not valid. Set up results folder."))
+    end
+    for (k, v) in IS.get_variables(res)
+        if decode_symbol(k)[1] == "P"
+            IS.get_variables(res)[k] = IS.get_base_power(res) .* v
+        end
+    end
+    for (p, v) in IS.get_parameters(res)
+        IS.get_parameters(res)[p] = IS.get_base_power(res) .* v
+    end
+    write_data(
+        IS.get_variables(res),
+        res.time_stamp,
+        folder_path;
+        file_type = CSV,
+        kwargs...,
+    )
+    write_optimizer_log(IS.get_total_cost(res), folder_path)
+    write_data(
+        IS.get_time_stamp(res),
+        folder_path,
+        "time_stamp";
+        file_type = CSV,
+        kwargs...,
+    )
+    write_data(get_duals(res), folder_path; file_type = CSV, kwargs...)
+    write_data(IS.get_parameters(res), folder_path; file_type = CSV, kwargs...)
+    files = collect(readdir(folder_path))
+    compute_file_hash(folder_path, files)
+    @info("Files written to $folder_path folder.")
+    return
+end
+
+"""
+    get_result_variable(IS.results, Symbol, PSY.DataType)
+
+Retrieve a specific variable dataframe from the results.
+
+# Arguments
+- `results::IS.Results`
+- `name::Symbol`: The prefix for a type of variable or parameter
+- `PSY.DataType`: The datatype of the variable from Power Systems
+
+# Example
+```julia
+variable = get_result_variable(results, :ON, ThermalStandard)
+```
+"""
+
+function get_result_variable(results::IS.Results, sym::Symbol, data_type::PSY.DataType)
+    variable_name = encode_symbol(data_type, sym)
+    if variable_name in keys(IS.get_variables(results))
+        variable = IS.get_variables(results)[variable_name]
+        return variable
+    else
+        @info "Variable $variable_name not found in results."
+    end
 end
 
 function load_results(folder_path::String)

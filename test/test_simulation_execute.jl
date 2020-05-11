@@ -91,13 +91,12 @@ function test_load_simulation(file_path::String)
 
     # Run twice, once building normally, once after deserializing.
     for i in 1:2
-        if i == 1
-            build!(sim)
-        else
-            rm(g_test_path, recursive = true)
-            mkdir(g_test_path)
+        output_dir = "test" * string(i)
+        if i == 2
             sim = get_deserialized(sim, stage_info)
         end
+
+        build!(sim; output_dir = output_dir, recorders = [:simulation])
         sim_results = execute!(sim)
 
         stage_names = keys(sim.stages)
@@ -252,8 +251,8 @@ function test_load_simulation(file_path::String)
                 ))
                 parameter = collect(values(value.(array.data)))  # [device, time] 1 is first execution
                 raw_result = Feather.read(variable_ref)
-                for i in 1:size(parameter, 1)
-                    result = raw_result[end, i] # end is last result [time, device]
+                for j in 1:size(parameter, 1)
+                    result = raw_result[end, j] # end is last result [time, device]
                     initial = parameter[1] # [device, time]
                     @test isapprox(initial, result)
                 end
@@ -289,6 +288,56 @@ function test_load_simulation(file_path::String)
                 end
             end
         end
+
+        @testset "Verify simulation events" begin
+            file = joinpath(
+                g_test_path,
+                PSI.get_name(sim),
+                output_dir,
+                "recorder",
+                "simulation.log",
+            )
+            @test isfile(file)
+            events = PSI.list_simulation_events(
+                PSI.InitialConditionUpdateEvent,
+                joinpath(g_test_path, "aggregation", output_dir);
+                step = 1,
+            )
+            @test length(events) == 0
+            events = PSI.list_simulation_events(
+                PSI.InitialConditionUpdateEvent,
+                joinpath(g_test_path, "aggregation", output_dir);
+                step = 2,
+            )
+            @test length(events) == 10
+            PSI.show_simulation_events(
+                devnull,
+                PSI.InitialConditionUpdateEvent,
+                joinpath(g_test_path, "aggregation", output_dir);
+                step = 2,
+            )
+            events = PSI.list_simulation_events(
+                PSI.InitialConditionUpdateEvent,
+                joinpath(g_test_path, "aggregation", output_dir);
+                step = 1,
+                stage = 1,
+            )
+            @test length(events) == 0
+            events = PSI.list_simulation_events(
+                PSI.InitialConditionUpdateEvent,
+                joinpath(g_test_path, "aggregation", output_dir);
+                step = 2,
+                stage = 1,
+            )
+            @test length(events) == 10
+            PSI.show_simulation_events(
+                devnull,
+                PSI.InitialConditionUpdateEvent,
+                joinpath(g_test_path, "aggregation", output_dir);
+                step = 2,
+                stage = 1,
+            )
+        end
     end
 
     ####################
@@ -299,7 +348,8 @@ function test_load_simulation(file_path::String)
             c_sys5_hy_uc,
             GLPK_optimizer,
         ),
-        "ED" => Stage(GenericOpProblem, template_hydro_ed, c_sys5_hy_ed, ipopt_optimizer),
+        "ED" =>
+            Stage(GenericOpProblem, template_hydro_ed, c_sys5_hy_ed, ipopt_optimizer),
     )
 
     sequence = SimulationSequence(
@@ -673,5 +723,5 @@ try
     test_load_simulation(g_test_path)
 finally
     @info("removing test files")
-    rm(g_test_path, recursive = true)
+    rm(g_test_path, force = true, recursive = true)
 end

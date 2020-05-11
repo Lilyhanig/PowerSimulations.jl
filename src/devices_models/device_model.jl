@@ -1,4 +1,5 @@
 abstract type AbstractDeviceFormulation end
+struct FixedOutput <: AbstractDeviceFormulation end
 
 function _check_device_formulation(
     ::Type{D},
@@ -50,5 +51,7 @@ mutable struct DeviceModel{D <: PSY.Device, B <: AbstractDeviceFormulation}
     end
 end
 
+get_device_type(m::DeviceModel) = m.device_type
+get_formulation(m::DeviceModel) = m.formulation
 get_feedforward(m::DeviceModel) = m.feedforward
 get_services(m::Union{DeviceModel, Nothing}) = isnothing(m) ? nothing : m.services

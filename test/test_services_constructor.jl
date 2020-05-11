@@ -44,7 +44,7 @@ end
     end
 end
 
-@testset "Test Reserves from Renewable Dispatch" begin
+@testset "Test Upwards Reserves from Renewable Dispatch" begin
     devices = Dict{Symbol, DeviceModel}(
         :Generators => DeviceModel(RenewableDispatch, RenewableFullDispatch),
         :Loads => DeviceModel(PowerLoad, PSI.StaticPowerLoad),
@@ -52,7 +52,6 @@ end
     branches = Dict{Symbol, DeviceModel}()
     services_template = Dict{Symbol, PSI.ServiceModel}(
         :Reserve => ServiceModel(VariableReserve{ReserveUp}, RangeReserve),
-        :DownReserve => ServiceModel(VariableReserve{ReserveDown}, RangeReserve),
     )
     model_template = OperationsProblemTemplate(
         CopperPlatePowerModel,
@@ -63,14 +62,17 @@ end
     for p in [true, false]
         op_problem =
             OperationsProblem(TestOpProblem, model_template, c_sys5_re; use_parameters = p)
-        moi_tests(op_problem, p, 168, 0, 72, 120, 24, false)
+        moi_tests(op_problem, p, 144, 0, 72, 24, 24, false)
     end
 end
 
 @testset "Test Reserves from Storage" begin
     devices = Dict{Symbol, DeviceModel}(
-        :Generators => DeviceModel(RenewableDispatch, RenewableFullDispatch),
+        :Generators => DeviceModel(ThermalStandard, ThermalDispatch),
         :Loads => DeviceModel(PowerLoad, PSI.StaticPowerLoad),
+        :Storage => DeviceModel(GenericBattery, BookKeeping),
+        # Added here to test it doesn't add reserve variables
+        :Ren => DeviceModel(RenewableDispatch, FixedOutput),
     )
     branches = Dict{Symbol, DeviceModel}()
     services_template = Dict{Symbol, PSI.ServiceModel}(
@@ -85,8 +87,8 @@ end
     )
     for p in [true, false]
         op_problem =
-            OperationsProblem(TestOpProblem, model_template, c_sys5_re; use_parameters = p)
-        moi_tests(op_problem, p, 168, 0, 72, 120, 24, false)
+            OperationsProblem(TestOpProblem, model_template, c_sys5_bat; use_parameters = p)
+        moi_tests(op_problem, p, 240, 0, 192, 240, 48, false)
     end
 end
 
@@ -112,19 +114,3 @@ end
         moi_tests(op_problem, p, 72, 0, 24, 72, 24, false)
     end
 end
-
-#TODO: add test for DR Reserves
-#= These capabilities aren't currently supported
-@testset "Test Reserves from DR" begin
-    devices = Dict{Symbol, DeviceModel}(:Generators => DeviceModel(ThermalStandard, ThermalDispatch),
-                                        :Loads =>  DeviceModel(InterruptibleLoad, PSI.DispatchablePowerLoad))
-    branches = Dict{Symbol, DeviceModel}()
-    services_template = Dict{Symbol, PSI.ServiceModel}(:Reserve => ServiceModel(VariableReserve{ReserveUp}, RangeReserve),
-                                                        :DownReserve => ServiceModel(VariableReserve{ReserveDown}, RangeReserve))
-    model_template = OperationsProblemTemplate(CopperPlatePowerModel , devices, branches, services_template)
-    for p in [true, false]
-        op_problem = OperationsProblem(TestOpProblem, model_template, c_sys5_uc; use_parameters=p)
-        moi_tests(op_problem, p, 264, 0, 120, 168, 24, false)
-    end
-end
-=#

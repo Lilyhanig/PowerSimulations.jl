@@ -1,3 +1,5 @@
+const HASH_FILENAME = "check.sha256"
+
 """
 Return a decoded JSON file.
 """
@@ -27,13 +29,24 @@ function find_key_with_value(d, value)
 end
 
 function compute_file_hash(path::String, files::Vector{String})
-    open(joinpath(path, "check.sha256"), "w") do io
-        for file in files
-            file_path = joinpath(path, file)
-            hash_value = compute_sha256(file_path)
-            write(io, "$hash_value    $file_path\n")
-        end
+    data = Dict("files" => [])
+    for file in files
+        file_path = joinpath(path, file)
+        file_info = Dict("filename" => file_path, "hash" => compute_sha256(file_path))
+        push!(data["files"], file_info)
     end
+
+    open(joinpath(path, HASH_FILENAME), "w") do io
+        write(io, JSON.json(data))
+    end
+end
+
+function read_file_hashes(path)
+    data = open(joinpath(path, HASH_FILENAME), "r") do io
+        JSON.parse(io)
+    end
+
+    return data["files"]
 end
 
 function check_kwargs(input_kwargs, valid_set::Array{Symbol}, function_name::String)
@@ -189,13 +202,11 @@ end
 function axis_array_to_dataframe(input_array::JuMP.Containers.DenseAxisArray{})
     if length(axes(input_array)) == 1
         result = Vector{Float64}(undef, length(first(input_array.axes)))
-
         for t in input_array.axes[1]
             result[t] = _jump_value(input_array[t])
         end
 
         return DataFrames.DataFrame(var = result)
-
     elseif length(axes(input_array)) == 2
 
         result = Array{Float64, length(input_array.axes)}(
@@ -233,13 +244,23 @@ function axis_array_to_dataframe(input_array::JuMP.Containers.DenseAxisArray{})
             res = DataFrames.DataFrame(hcat(third_dim, result))
             result_df = vcat(result_df, res)
         end
-
         return DataFrames.names!(result_df, names)
-
     else
-        error("Dimension Number $(length(axes(input_array))) not Supported")
+        @warn("Dimension Number $(length(axes(input_array))) not Supported, returning empty DataFrame")
+        return DataFrames.DataFrame()
     end
 
+end
+
+function axis_array_to_dataframe(input_array::JuMP.Containers.SparseAxisArray)
+    column_names = unique([(k[1], k[3]) for k in keys(input_array.data)])
+    result_df = DataFrames.DataFrame()
+    array_values = Vector{Vector{Float64}}(undef, length(column_names))
+    for (ix, col) in enumerate(column_names)
+        res = values(filter(v -> first(v)[[1, 3]] == col, input_array.data))
+        array_values[ix] = PSI._jump_value.(res)
+    end
+    return DataFrames.DataFrame(array_values, Symbol.(column_names))
 end
 
 # this ensures that the time_stamp is not double shortened
@@ -255,6 +276,13 @@ end
 """ Returns the correct container spec for the selected type of JuMP Model"""
 function container_spec(m::M, axs...) where {M <: JuMP.AbstractModel}
     return JuMP.Containers.DenseAxisArray{JuMP.variable_type(m)}(undef, axs...)
+end
+
+""" Returns the correct container spec for the selected type of JuMP Model"""
+function sparse_container_spec(m::M, axs...) where {M <: JuMP.AbstractModel}
+    indexes = Base.Iterators.product(axs...)
+    contents = Dict{eltype(indexes), Any}(indexes .=> 0)
+    return JuMP.Containers.SparseAxisArray(contents)
 end
 
 function middle_rename(original::Symbol, split_char::String, addition::String)

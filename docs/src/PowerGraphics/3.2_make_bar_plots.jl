@@ -15,8 +15,8 @@
 # bar_plot(results)
 # ```
 
-# ![this one](plots-8/P__PowerSystems.ThermalStandard_Bar.png)
-# ![this one](plots-8/Example_Bar_Plot.png)
+# ![this one](plots-20/P__ThermalStandard_Bar.png)
+# ![this one](plots-20/Example_Bar_Plot.png)
 
 # ### Save the bar plots to a folder
 
@@ -28,8 +28,8 @@
 # bar_plot(results; save = folder_path)
 # ```
 
-# ![this one](plots-9/P__PowerSystems.ThermalStandard_Bar.png)
-# ![this one](plots-9/Example_saved_Bar_Plot.png)
+# ![this one](plots-21/P__ThermalStandard_Bar.png)
+# ![this one](plots-21/Example_saved_Bar_Plot.png)
 
 # ### Show reserves in the bar plots
 
@@ -37,8 +37,8 @@
 # bar_plot(results; reserves = true)
 # ```
 
-# ![this one](plots-10/P__PowerSystems.ThermalStandard_Bar.png)
-# ![this one](plots-10/Example_Bar_Plot_with_Reserves.png)
+# ![this one](plots-22/P__ThermalStandard_Bar.png)
+# ![this one](plots-22/Example_Bar_Plot_with_Reserves.png)
 
 # ### Set different colors for the plots
 
@@ -47,8 +47,8 @@
 # bar_plot(results; seriescolor = colors)
 # ```
 
-# ![this one](plots-11/P__PowerSystems.ThermalStandard_Bar.png)
-# ![this one](plots-11/Example_Bar_Plot_with_Other_Colors.png)
+# ![this one](plots-23/P__ThermalStandard_Bar.png)
+# ![this one](plots-23/Example_Bar_Plot_with_Other_Colors.png)
 
 # ### Set a title
 
@@ -57,8 +57,8 @@
 # bar_plot(results; title = title)
 # ```
 
-# ![this one](plots-12/P__PowerSystems.ThermalStandard_Bar.png)
-# ![this one](plots-12/Example_of_a_Title.png)
+# ![this one](plots-24/P__ThermalStandard_Bar.png)
+# ![this one](plots-24/Example_of_a_Title.png)
 
 # ### For saving the plot with the PlotlyJS backend, you can set a different format for saving
 # ```julia

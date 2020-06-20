@@ -21,16 +21,24 @@
 # ```julia
 # fuel_plot(results, system)
 # ```
-# ![this one](plots-13/Example_Fuel_Plot_Stack.png)
-# ![this one](plots-13/Example_Fuel_Plot_Bar.png)
+# ![this one](plots-3/Example_Fuel_Plot_Stack.png)
+# ![this one](plots-3/Example_Fuel_Plot_Bar.png)
 
-# ### Show reserves in the fuel plots
+# ### Make fuel plots with a load line
 
 # ```julia
-# fuel_plot(results, system; reserves = true)
+# fuel_plot(results, system; load = true)
 # ```
-# ![this one](plots-14/Example_Fuel_Plot_with_Reserves_Stack.png)
-# ![this one](plots-14/Example_Fuel_Plot_with_Reserves_Bar.png)
+# ![this one](plots-3/Fuel_Plot_with_Load_Stack.png)
+# ![this one](plots-3/Fuel_Plot_with_Load_Bar.png)
+
+# ### Make fuel plots with a curtailment line
+
+# ```julia
+# fuel_plot(results, system; curtailment = true)
+# ```
+# ![this one](plots-3/Fuel_Plot_with_Curtailment_Stack.png)
+# ![this one](plots-3/Fuel_Plot_with_Curtailment_Bar.png)
 
 # ### Set different colors for the plots
 
@@ -39,8 +47,17 @@
 # fuel_plot(results, system; seriescolor = colors)
 # ```
 
-# ![this one](plots-15/Example_Fuel_Plot_with_Other_Colors_Stack.png)
-# ![this one](plots-15/Example_Fuel_Plot_with_Other_Colors_Bar.png)
+# ![this one](plots-3/Example_Fuel_Plot_with_Other_Colors_Stack.png)
+# ![this one](plots-3/Example_Fuel_Plot_with_Other_Colors_Bar.png)
+
+# ### Create a Stair Plot, instead of interpolating between values
+
+# ```julia
+# fuel_plot(results, system; stair = true)
+# ```
+
+# ![this one](plots-3/Fuel_Stair.png)
+# ![this one](plots-3/Fuel_Bar.png)
 
 # ### Set a title
 
@@ -49,8 +66,8 @@
 # fuel_plot(results, system; title = title)
 # ```
 
-# ![this one](plots-16/Example_of_a_Title_Stack.png)
-# ![this one](plots-16/Example_of_a_Title_Bar.png)
+# ![this one](plots-3/Example_of_a_Title_Stack.png)
+# ![this one](plots-3/Example_of_a_Title_Bar.png)
 
 # ### For saving the plot with the PlotlyJS backend, you can set a different format for saving
 

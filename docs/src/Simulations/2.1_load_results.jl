@@ -17,7 +17,7 @@ results = load_simulation_results(simulation_output, "UC")
 # select the specific steps and variables that are desired for the results
 
 steps = ["step-1", "step-2", "step-3"]
-variables = [Symbol("P__PowerSystems.ThermalStandard")]
+variables = [Symbol("P__ThermalStandard")]
 results = load_simulation_results(simulation_output, "UC", steps, variables)
 
 # ### If you no longer have the simulation object in memory
@@ -31,7 +31,7 @@ results = PSI.load_simulation_results(path, "UC")
 # To load the results for a specific subset of steps and variables for a stage
 
 steps = ["step-1", "step-2", "step-3"]
-variables = [Symbol("P__PowerSystems.ThermalStandard")]
+variables = [Symbol("P__ThermalStandard")]
 results = PSI.load_simulation_results(path, "UC", steps, variables)
 
 # ### Plotting

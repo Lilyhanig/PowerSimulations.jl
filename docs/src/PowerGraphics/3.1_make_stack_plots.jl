@@ -15,8 +15,8 @@
 # stack_plot(results)
 # ```
 
-# ![this one](plots-3/P__PowerSystems.ThermalStandard_Stack.png)
-# ![this one](plots-3/Example_Stack_Plot.png)
+# ![this one](plots-10/P__ThermalStandard_Stack.png)
+# ![this one](plots-10/Example_Stack_Plot.png)
 
 # ### Save the stack plots to a folder
 
@@ -28,16 +28,16 @@
 # stack_plot(results; save = folder_path)
 # ```
 
-# ![this one](plots-4/P__PowerSystems.ThermalStandard_Stack.png)
-# ![this one](plots-4/Example_saved_Stack_Plot.png)
+# ![this one](plots-11/P__ThermalStandard_Stack.png)
+# ![this one](plots-11/Example_saved_Stack_Plot.png)
 
 # ### Show reserves in the stack plots
 
 # ```julia
 # stack_plot(results; reserves = true)
 # ```
-# ![this one](plots-5/P__PowerSystems.ThermalStandard_Stack.png)
-# ![this one](plots-5/Example_Stack_Plot_with_Reserves.png)
+# ![this one](plots-12/P__ThermalStandard_Stack.png)
+# ![this one](plots-12/Example_Stack_Plot_with_Reserves.png)
 
 # ### Set different colors for the plots
 
@@ -45,8 +45,16 @@
 # colors = [:pink :green :blue :magenta :black]
 # stack_plot(results; seriescolor = colors)
 # ```
-# ![this one](plots-6/P__PowerSystems.ThermalStandard_Stack.png)
-# ![this one](plots-6/Example_Stack_Plot_with_Other_Colors.png)
+# ![this one](plots-13/P__ThermalStandard_Stack.png)
+# ![this one](plots-13/Example_Stack_Plot_with_Other_Colors.png)
+
+# ### Create a Stair Plot, instead of interpolating between values
+
+# ```julia
+# stack_plot(results; stair = true)
+# ```
+# ![this one](plots-14/P__ThermalStandard_Stair.png)
+# ![this one](plots-14/Stair_Plot.png)
 
 # ### Set a title
 
@@ -54,8 +62,8 @@
 # title = "Example of a Title"
 # stack_plot(results; title = title)
 # ```
-# ![this one](plots-7/P__PowerSystems.ThermalStandard_Stack.png)
-# ![this one](plots-7/Example_of_a_Title.png)
+# ![this one](plots-15/P__ThermalStandard_Stack.png)
+# ![this one](plots-15/Example_of_a_Title.png)
 
 # ### For saving the plot with the PlotlyJS backend, you can set a different format for saving
 # ```julia

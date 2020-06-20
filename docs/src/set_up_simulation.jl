@@ -4,9 +4,9 @@ using PowerSystems
 using Dates
 const PSY = PowerSystems
 const PSI = PowerSimulations
-
-system_ed = c_sys5_ed
-system_uc = c_sys5_uc
+#c_sys5_ed
+system_ed = c_sys5_re
+system_uc = c_sys5_re
 
 branches = Dict()
 services = Dict()
@@ -46,8 +46,8 @@ template_ed =
 # Define a template
 
 stages_definition = Dict(
-    "UC" => PSI.Stage(TestOpProblem, template_uc, system_uc, GLPK_optimizer),
-    "ED" => PSI.Stage(TestOpProblem, template_ed, system_ed, GLPK_optimizer),
+    "UC" => PSI.Stage(TestOpProblem, template_uc, system_uc, Cbc_optimizer),
+    "ED" => PSI.Stage(TestOpProblem, template_ed, system_ed, Cbc_optimizer),
 )
 
 sequence = PSI.SimulationSequence(

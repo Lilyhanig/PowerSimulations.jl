@@ -124,7 +124,6 @@ export write_results
 export check_file_integrity
 export load_operation_results
 export load_simulation_results
-export load_results
 export write_to_CSV
 export get_all_constraint_index
 export get_all_var_index

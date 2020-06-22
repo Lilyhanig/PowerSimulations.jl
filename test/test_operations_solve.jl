@@ -296,7 +296,7 @@ function test_write_functions(file_path, op_problem, res)
         PSI.export_op_model(op_problem, file)
         PSI.write_data(op_problem, path)
         list = sort!(collect(readdir(path)))
-        @test ["P__PowerSystems.ThermalStandard.feather", "op_problem.json"] == list
+        @test ["P__ThermalStandard.feather", "op_problem.json"] == list
     end
 
     @testset "Test write_data functions" begin
